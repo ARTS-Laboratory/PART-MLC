@@ -107,7 +107,7 @@ tt_y_train = np.asarray(tt_y_train)
 tt_X_train = np.asarray(tt_X_train) 
 
 
-mlp = sklearn.neural_network.MLPRegressor(hidden_layer_sizes=(40),solver='adam',random_state=1, max_iter=500,activation='relu')
+mlp = sklearn.neural_network.MLPRegressor(hidden_layer_sizes=(40,40),solver='adam',random_state=1, max_iter=500,activation='relu')
 mlp = mlp.fit(X_train, y_train)
 
 plt.figure()
@@ -130,11 +130,9 @@ y_predicted = mlp.predict(X_test)
 print(y_predicted[0])
 
 # perform inference by hand
-coef = mlp.coefs_
-intercept = mlp.intercepts_
-l1 = relu(np.matmul(X_test,coef[0])+intercept[0]) 
-y_predicted_direct = np.matmul(l1,coef[1])+intercept[1]
-print(y_predicted_direct[0][0])
+C = mlp.coefs_
+B = mlp.intercepts_
+
 
 
 plt.figure()
@@ -199,10 +197,12 @@ plt.tight_layout()
 #%% Save the trained model
 
 
-np.savetxt("data/C_0.csv", coef[0], delimiter=",")
-np.savetxt("data/C_1.csv", np.expand_dims(coef[1][:,0],axis=0), delimiter=",")
-np.savetxt("data/B_0.csv", np.expand_dims(intercept[0],axis=0), delimiter=",")
-np.savetxt("data/B_1.csv", intercept[1], delimiter=",")
+np.savetxt("data/C_0.csv", C[0], delimiter=",")
+np.savetxt("data/C_1.csv", C[1], delimiter=",")
+np.savetxt("data/C_2.csv", np.expand_dims(C[2][:,0],axis=0), delimiter=",")
+np.savetxt("data/B_0.csv", np.expand_dims(B[0],axis=0), delimiter=",")
+np.savetxt("data/B_1.csv", np.expand_dims(B[1],axis=0), delimiter=",")
+np.savetxt("data/B_2.csv", B[2], delimiter=",")
 np.savetxt("data/xx.csv", np.expand_dims(xx,axis=0), delimiter=",")
 
 
