@@ -79,7 +79,7 @@ def sliding_window_over_data(data, start_idx, window_length, prediction_offset, 
 
 if __name__=='__main__':
     start_idx, window_length, prediction_offset, prediction_length = 0, 100, 100, 10
-    full_time, full_data = load_data('../../../../../acceleration_data/accel_4.csv', separate_time=True)
+    full_time, full_data = load_data('data/accel_4.csv', separate_time=True)
     print('Data shape: {}, Time shape: {}'.format(full_data.shape, full_time.shape))
     windowed_x, windowed_y = sliding_window_over_data(full_data.transpose()[0], start_idx=start_idx,
                                                       window_length=window_length, prediction_offset=prediction_offset,
@@ -90,14 +90,18 @@ if __name__=='__main__':
     print('Model score: {} after {} epoch{}'.format(model.score(windowed_x, windowed_y),
                                                     model.n_iter_, 's' if model.n_iter_ > 1 else ''))
     print('Current loss: {}'.format(model.loss_))
-    plt.figure(figsize=(6.4, 4.8), dpi=200)
+    
+    #%% Plot the data
+    plt.figure(figsize=(6.4, 4.8))
     plt.plot(model.loss_curve_)
     plt.title('Loss curve')
     plt.ylabel('Loss')
     plt.xlabel('Iterations')
     plt.xlim([0, 20])
     plt.savefig('MLP_Loss_Curve')
-    plt.figure(figsize=(6.4, 4.8), dpi=200)
+    
+    
+    plt.figure(figsize=(6.4, 4.8))
     print(len(windowed_x))
     print(len(windowed_x[0]))
     for idx, window in enumerate(windowed_x):
