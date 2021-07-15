@@ -8,6 +8,7 @@ import sklearn.neural_network
 from matplotlib import pyplot as plt
 from sklearn import preprocessing
 
+plt.close('all')
 
 def load_data(filename, separate_time=True):
     fn_data = np.loadtxt(filename, delimiter=',', skiprows=2)
@@ -83,14 +84,14 @@ def sliding_window_over_data(data, start_idx, window_length, prediction_offset, 
     return x_values, y_values
 
 if __name__=='__main__':
-    start_idx, window_length, prediction_offset, prediction_length = 0, 100, 100, 10
+    start_idx, window_length, prediction_offset, prediction_length = 0, 100, 100, 2
     full_time, full_data = load_data('data/accel_4.csv', separate_time=True)
     print('Data shape: {}, Time shape: {}'.format(full_data.shape, full_time.shape))
     windowed_x, windowed_y = sliding_window_over_data(full_data.transpose()[0], start_idx=start_idx,
                                                       window_length=window_length, prediction_offset=prediction_offset,
                                                       prediction_length=prediction_length)
     print('Windowed x data shape: {}, Windowed y data shape: {}'.format(len(windowed_x), len(windowed_y)))
-    model = sklearn.neural_network.MLPRegressor(hidden_layer_sizes=(20, 20, 1), max_iter=4000, early_stopping=True,
+    model = sklearn.neural_network.MLPRegressor(hidden_layer_sizes=(20, 20), max_iter=4000, early_stopping=True,
                                                 n_iter_no_change=100, batch_size=16, solver='adam').fit(windowed_x, windowed_y)
     print('Model score: {} after {} epoch{}'.format(model.score(windowed_x, windowed_y),
                                                     model.n_iter_, 's' if model.n_iter_ > 1 else ''))
@@ -109,10 +110,14 @@ if __name__=='__main__':
     plt.figure(figsize=(6.4, 4.8))
     print(len(windowed_x))
     print(len(windowed_x[0]))
+    plot_x = []
+    plot_y = []
     for idx, window in enumerate(windowed_x):
         prediction = model.predict([window])[0]
-        plt.scatter(full_time[idx + window_length + prediction_offset:
-                              idx + window_length + prediction_offset + len(prediction)], prediction, 1)
+        plot_x.append(full_time[idx + window_length + prediction_offset:idx + window_length + prediction_offset + len(prediction)])
+        plot_y.append(prediction)
+                      
+        plt.scatter(plot_x[-1], plot_y[-1], 1)
     # prediction = model.predict(windowed_x)
     # plt.scatter(full_time[0: len(prediction)], prediction, 1, label='Predicted points', color='orange')
     plt.plot(full_time, full_data.transpose()[0], label='Actual points')
@@ -120,5 +125,34 @@ if __name__=='__main__':
     plt.legend()
     plt.tight_layout()
     plt.savefig('Future_predictions_plot')
-    plt.show()
     coefs, intercepts = model.coefs_, model.intercepts_
+    
+    
+X = np.asarray(plot_x).mean(axis=1)
+Y = np.asarray(plot_y).mean(axis=1)
+
+plt.figure()
+plt.plot(full_time, full_data.transpose()[0], label='Actual points')
+plt.plot(X,Y,'--',label='MLP model')
+plt.legend()
+plt.grid(True) 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
