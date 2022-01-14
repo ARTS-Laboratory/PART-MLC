@@ -7,7 +7,7 @@ Programming Architecture for Real-Time Machine Learning Control
 <p align="center">
 </p>
 
-## [Time Series Forecasting](time_series_forecasting)
+## [Time Series Forecasting](time_series_forcasting)
 High-rate time series forecasting.
 <p align="center">
 <img src="organizational/frontpage_icons/time_series_icon.png" alt="drawing" width="400"/>
