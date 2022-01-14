@@ -7,7 +7,7 @@ Programming Architecture for Real-Time Machine Learning Control
 <p align="center">
 </p>
 
-## [Time Series Forecasting](Time_Series_Forecasting)
+## [Time Series Forecasting](time_series_forecasting)
 High-rate time series forecasting.
 <p align="center">
 <img src="organizational/frontpage_icons/time_series_icon.png" alt="drawing" width="400"/>
@@ -16,7 +16,7 @@ High-rate time series forecasting.
 </p>
 
 
-## [State Estimation](State_Estimation)
+## [State Estimation](state_estimation)
 High-rate state estimation.
 
 <p align="center">
@@ -25,10 +25,10 @@ High-rate state estimation.
 <p align="center">
 </p>
 
-## [Metrics](Metrics)
+## [Metrics](metrics)
 High-rate state estimation.
 
-## [Organizational](Organizational)
+## [Organizational](organizational)
 Back-end products
 
 
