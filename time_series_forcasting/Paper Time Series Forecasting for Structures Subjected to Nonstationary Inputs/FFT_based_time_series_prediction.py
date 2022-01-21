@@ -32,7 +32,7 @@ plt.close('all')
 
 
 #%% Load data
-data_pickle = pickle.load(open('../data/3_data_sets/testing data_cut_data/nonstationarity_data.pkl', 'rb'))
+data_pickle = pickle.load(open('nonstationarity_data.pkl', 'rb'))
 acceleration=data_pickle['acceleration']
 time=data_pickle['time']
 #%% Configuration
