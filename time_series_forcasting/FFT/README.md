@@ -1,4 +1,23 @@
-# FFT_based_prediction
+# FFT-based Time Series Forecasting
+
+## Technical writeup
+
+<p align="center">
+<img src="function_image.png" alt="drawing" width="400"/>
+</p>
+<p align="center">
+</p>
+
+## Python Function
+
+## Matlab
+
+## LabVIEW
+
+## Vivado
+
+
+
 ## How to run:
 run 'FFT_based_time_series_prediction.py' 
 ## data input:
