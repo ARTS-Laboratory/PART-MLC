@@ -1,15 +1,22 @@
 # FFT-based Time Series Forecasting
-
-## Technical writeup
-
-<p align="center">
-<img src="function_image.png" alt="drawing" width="400"/>
-</p>
-<p align="center">
-</p>
-
 ## Python Function
-1. This will include an example. 
+## How to run:
+There are two script of python
+1. main.py:  This is for user. Data input and tuning the configuration and plot the output by this one.
+2. model.py:  This is the whole FFT based prediction function.
+    This script has three functions inside:
+    
+    (a) fft_prediction:  FFT based prediction model works
+    
+    (b) plotting_all:  This function is for plotting output of the model
+    
+    (c) range_with_floats:This function increments the start number by step until it reaches stop.
+    link: https://www.dataquest.io/blog/python-range-tutorial/
+3. For user just need to run the main.py
+4. Please cite the following work if you use this code and data:  Chowdhury, P., Conrad, P., Bakos, J. D., & Downey, A. (2021, September). Time Series Forecasting for Structures Subjected to Nonstationary Inputs. In Smart Materials, Adaptive Structures and Intelligent Systems (Vol. 85499, p. V001T03A008). American Society of Mechanical Engineers.
+
+
+
 
 ## Matlab
 
@@ -19,23 +26,3 @@
 
 
 
-
-## How to run:
-run 'FFT_based_time_series_prediction.py' 
-## data input:
-'nonstationarity_data.pkl'
-## plots 1:
- The time series prediction using various learning window lengths and calculated instantaneous error over for the experiment data with various learning window lengths :  
-run 'analyzing_result_figure_5_6_learning_error.py'
-## plots 2:
-plot Effect of various learning window lengths (L) showing:
-(a) MAE in different states, and; (b) transient time.
-run'analyzing_result_figure_7_various_learning_lengths.py'
-## plots 3:
-Effect of various computational time (T) in a specific
-learning window length (L) showing: (a) MAE in different states, and;
-(b) transient time.
-run'analyzing_result_figure_8_various_computational time.py'
-## plots 4:
-The full 16-second test is shown in the upper plot while the inset shows the 1 second around the nonstationarity
- run 'plot_original_data.py'
