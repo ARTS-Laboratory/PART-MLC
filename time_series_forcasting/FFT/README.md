@@ -13,7 +13,7 @@ There are two script of python
     (c) range_with_floats:This function increments the start number by step until it reaches stop.
     link: https://www.dataquest.io/blog/python-range-tutorial/
 3. For user just need to run the main.py
-4. Chowdhury, P., Conrad, P., Bakos, J. D., & Downey, A. (2021, September). Time Series Forecasting for Structures Subjected to Nonstationary Inputs. In Smart Materials, Adaptive Structures and Intelligent Systems (Vol. 85499, p. V001T03A008). American Society of Mechanical Engineers.
+4. Please cite the following work if you use this code and data:  Chowdhury, P., Conrad, P., Bakos, J. D., & Downey, A. (2021, September). Time Series Forecasting for Structures Subjected to Nonstationary Inputs. In Smart Materials, Adaptive Structures and Intelligent Systems (Vol. 85499, p. V001T03A008). American Society of Mechanical Engineers.
 
 
 
