@@ -2,7 +2,20 @@
 """
 Created on Thu Feb 17 01:11:27 2022
 
-@author: chypu
+@author: Puja Chowdhury
+
+This is the whole FFT based prediction function.
+This script has three functions:
+    1. fft_prediction: FFT based prediction model works
+    2. plotting_all: this function is for plotting output of the model
+    3.range_with_floats:This function increments the start number by step until it reaches stop.
+    link: https://www.dataquest.io/blog/python-range-tutorial/
+
+Published Paper:
+Time Series Forecasting for Structures Subjected to Nonstationary Inputs
+Please cite the following work if you use this code and data:
+Chowdhury, P., Conrad, P., Bakos, J. D., & Downey, A. (2021, September). Time Series Forecasting for Structures Subjected to Nonstationary Inputs. In Smart Materials, Adaptive Structures and Intelligent Systems (Vol. 85499, p. V001T03A008). American Society of Mechanical Engineers.
+
 """
 
 #%% Load Libraries
@@ -22,24 +35,24 @@ def fft_prediction(acceleration, time, Ts, Fs, input_time, time_to_predict, seri
 
     Parameters
     ----------
-    acceleration : TYPE
-        DESCRIPTION.
-    time : TYPE
-        DESCRIPTION.
-    Ts : TYPE
-        DESCRIPTION.
-    Fs : TYPE
-        DESCRIPTION.
-    input_time : TYPE
-        DESCRIPTION.
-    time_to_predict : TYPE
-        DESCRIPTION.
-    series_length : TYPE
-        DESCRIPTION.
-    sliding_size : TYPE
-        DESCRIPTION.
-    computation_time : TYPE
-        DESCRIPTION.
+    acceleration : numpy.ndarray
+        This model is taking acceleration data. But any series data can be used instead of acceleration.
+    time : numpy.ndarray
+        time data.
+    Ts : float
+        Sampling time.
+    Fs : float
+        Sampling rate in Hz.
+    input_time : float
+        learning window length.
+    time_to_predict : integer
+        length of prediction.
+    series_length : float
+       Length of the series data.
+    sliding_size : integer
+       window sliding size which should be same as time of prediction.
+    computation_time : float
+      assuming computationa time..
 
     Returns
     -------
@@ -55,7 +68,6 @@ def fft_prediction(acceleration, time, Ts, Fs, input_time, time_to_predict, seri
     # split the data
     count=0
     for i in range_with_floats(0,series_length, sliding_size):
-        # starting_point=round(i*Fs)
         starting_point=int(round(i*Fs))    
         ending_point_train =int(round(starting_point + (input_time * Fs)))
         ending_point_test = int(round(starting_point + (time_to_predict * Fs)))
@@ -66,7 +78,6 @@ def fft_prediction(acceleration, time, Ts, Fs, input_time, time_to_predict, seri
         td_section['time_org'].append(time_org)
         td_section['x_train_data'].append(x_train_data_org)
         td_section['x_test_data'].append(x_test_data_split)
-    #   td_section['train+pred_time'].append(time[starting_point:ending_point_train+round(time_to_predict*Fs)])
         td_section['signal_pred_time'].append(time[ending_point_train+int(round(computation_time*Fs)):ending_point_train+int(round(computation_time*Fs))+int(round(time_to_predict*Fs))])
         count+=1
 
@@ -79,21 +90,19 @@ def fft_prediction(acceleration, time, Ts, Fs, input_time, time_to_predict, seri
         # Processing frequency:
         n = x_train_data.size
         t1 = np.arange(0, n)
-        p = np.polyfit(t1, x_train_data, 1)
+        p = np.polyfit(t1, x_train_data, 1) # find the trend 
         x_notrend = x_train_data - p[0] * t1  # detrended x
         x_freqdom = fft.fft(x_notrend)  # detrended x in frequency domain
         f = fft.fftfreq(n, d=Ts)  # frequencies
 
-        ## sorted  frequencies with more impect on the original FFT
+        ## sorted  frequencies with more impact on the original FFT
 
         freq_list = [20,60,70,80,100,120,140,150,160,170,180,200,220,240,
                     -20,-60,-70,-80,-100,-120,-140,-150,-160,-170,-180,-200,-220,-240]
         fq_idx=[]
         for fq in freq_list:
-            # fq_idx.append(np.where(np.isclose(f, fq)))
             if len(np.where(np.isclose(f, fq))[0])==0: # if not able to find any frequencies from freq_list don't append
                 pass
-                # print(fq)
             else:
                 fq_idx.append(int(np.where(np.isclose(f, fq))[0]))
 
@@ -105,13 +114,12 @@ def fft_prediction(acceleration, time, Ts, Fs, input_time, time_to_predict, seri
 
         for j in fq_idx:
 
-            ampli = np.absolute(x_freqdom[j]) /n  # amplitude
-            phase = np.angle(x_freqdom[j])  # phase  
-            restored_sig += ampli * np.cos(2 * np.pi * (f[j] / (n / input_time)) * t1 + phase)
+            ampli = np.absolute(x_freqdom[j]) /n  # find amplitude
+            phase = np.angle(x_freqdom[j])  # find phase  
+            restored_sig += ampli * np.cos(2 * np.pi * (f[j] / (n / input_time)) * t1 + phase) # restored signal with respect to phase,amplitude and frequencies
 
         trend=p[0]
         extrapolation = restored_sig +trend * t1
-        # signal_pred = extrapolation[int(round(input_time * Fs)):int(math.ceil((input_time + time_to_predict) * Fs))] #  second prediction # round make decimal points a round number, math.ceil get the higher round number
         signal_pred = extrapolation[int(round((input_time+computation_time)* Fs)):int(math.ceil((input_time +computation_time+ time_to_predict) * Fs))]    
         signal_pred_list.append(signal_pred)
         ## error calculation
@@ -137,11 +145,11 @@ def plotting_all(time, acceleration, Ts, Fs, Sig_pred_time_all, x_test_data_all,
     Fs : float
         Sampling rate in Hz.
     Sig_pred_time_all : numpy.ndarray
-        DESCRIPTION.
+       time of  predicted signal.
     x_test_data_all : numpy.ndarray
-        DESCRIPTION.
+        Truth value/ original data.
     signal_pred_data_all : numpy.ndarray
-        DESCRIPTION.
+       predicted signal.
 
     Returns
     -------
@@ -151,7 +159,6 @@ def plotting_all(time, acceleration, Ts, Fs, Sig_pred_time_all, x_test_data_all,
     # plotting with specific parameters
     # Reseting plot parameter to default
     plt.rcdefaults()
-    # Updating Parameters for Paper
     params = {
         'lines.linewidth' :1,
         'lines.markersize' :2,
@@ -168,64 +175,60 @@ def plotting_all(time, acceleration, Ts, Fs, Sig_pred_time_all, x_test_data_all,
        'ytick.labelsize': 8,
        'text.usetex': False,
         'figure.autolayout': True,
-       'figure.figsize': [10,10] # width and height in inch (max width = 7.5", max length = 10")
+       'figure.figsize': [6.5,6.5] 
        }
     plt.rcParams.update(params)
 
     fig1 = plt.figure(constrained_layout=True)
     spec2 = gridspec.GridSpec(ncols=2, nrows=2, figure=fig1)
 
-    #plot the orginal data and the FFT
+    #plot the orginal data 
     ax1 = fig1.add_subplot(spec2[0, 0])
     ax1.plot(time,acceleration,'-',linewidth=.5, label='original data')
-    ax1.set_title('Original Data', y=-.4, ha='center')
+    ax1.set_title('Original Data', y=1, ha='center')
     plt.xlabel('time (s)')
     plt.ylabel('acceleration (m/s$^2$)')
-    # plt.xlim(0,1.5)
     plt.grid()
     plt.legend(loc=2,ncol=2,facecolor='white', edgecolor = 'black', framealpha=1)
 
     # FFT over original data
     N = acceleration.size
     T = np.arange(0, N)
-    P = np.polyfit(T, acceleration, 1)
+    P = np.polyfit(T, acceleration, 1) # find trend
     X_notrend = acceleration - P[0] * T  # detrended x
     X_freqdom = fft.fft(X_notrend)  # detrended x in frequency domain
     F = fft.fftfreq(N, d=Ts)  # frequencies
 
     ax2 = fig1.add_subplot(spec2[0, 1])
     ax2.plot(np.absolute(F),np.absolute(X_freqdom), '--',  label='frequency domain')
-    ax2.set_title('FFT Plot', y=-.4, ha='center')
+    ax2.set_title('FFT Plot', y=1, ha='center')
     plt.xlabel('frequency (s)')
     plt.ylabel('amplitude')
-    # plt.xlim(0,1.5)
     plt.grid()
-    plt.legend(loc=2,ncol=2,facecolor='white', edgecolor = 'black', framealpha=1)
+    plt.legend(loc = "upper right",facecolor='white', edgecolor = 'black', framealpha=1)
 
 
     # prediction and truth plot
     ax3 = fig1.add_subplot(spec2[1, 0])
-    ax3.plot(Sig_pred_time_all,x_test_data_all,'-',linewidth=.5, label='data')
+    ax3.plot(Sig_pred_time_all,x_test_data_all,'-',linewidth=.5, label='truth')
     ax3.plot(Sig_pred_time_all,signal_pred_data_all,'--',linewidth=.5, label='predicted')
     # plt.xlabel('time (s)\n (a)')
     # ax.set_title("Hello Title", y=0, pad=-35, verticalalignment="bottom")
-    ax3.set_title('Prediction and Truth', y=-.5, ha='center')
+    ax3.set_title('Prediction and Truth', y=1, ha='center')
     plt.xlabel('time (s)')
     plt.ylabel('acceleration (m/s$^2$)')
-    # plt.xlim(0,1.5)
+    plt.xlim(-1.2,1.2)
     plt.grid()
     plt.legend(loc=2,ncol=2,facecolor='white', edgecolor = 'black', framealpha=1)
 
     # Error plot
-
     ax4 = fig1.add_subplot(spec2[1, 1])
     ax4.plot(Sig_pred_time_all,abs(x_test_data_all-signal_pred_data_all),'-',linewidth=.5, label='error')#label= 'error for 0.01 sec learning window'
-    ax4.set_title('Error', y=-.5, ha='center')
+    ax4.set_title('Error', y=1, ha='center')
     plt.xlabel('time (s)')
     plt.ylabel('error (m/s$^2$)')
-    # plt.xlim(0,1.5)
+    plt.xlim(-1.2,1.2)
     plt.grid()
-    # plt.legend()
     plt.legend(loc=2,ncol=2,facecolor='white', edgecolor = 'black', framealpha=1)
 
     plt.savefig('../plots/output_plot.png', dpi=400)

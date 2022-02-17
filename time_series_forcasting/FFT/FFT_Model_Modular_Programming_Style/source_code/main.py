@@ -1,8 +1,17 @@
-# -*- coding: utf-8 -*-
+
 """
 Created on Thu Feb 17 01:10:12 2022
 
-@author: chypu
+@author: Puja Chowdhury
+
+This script is for user. Data input and tuning the configuration and plot the output by this one.
+
+Published Paper:
+Time Series Forecasting for Structures Subjected to Nonstationary Inputs
+Please cite the following work if you use this code and data:
+Chowdhury, P., Conrad, P., Bakos, J. D., & Downey, A. (2021, September). Time Series Forecasting for Structures Subjected to Nonstationary Inputs. In Smart Materials, Adaptive Structures and Intelligent Systems (Vol. 85499, p. V001T03A008). American Society of Mechanical Engineers.
+
+
 """
 #%% Load Libraries
 import IPython as IP
@@ -22,14 +31,11 @@ def main():
     Fs =math.floor(1/Ts)
     
     # User defined parameters
-    input_time=0.1# Learning Window Length in seconds
+    input_time=1# Learning Window Length in seconds
     time_to_predict=1 # time of prediction
-    series_length=16.5
-    sliding_size=1
-    computation_time=.1
-    
-    # pickel file nameing
-    # saveNameIdx='1001000500' # input time * 1000,time_to_predict * 1000, computation_time *1000
+    series_length=16.5 # Length of the series data
+    sliding_size=1 # window sliding size which should be same as time of prediction
+    computation_time=.1 # assuming computationa time.
     result_dict = fft_prediction(acceleration, time, Ts, Fs, input_time, time_to_predict, series_length, sliding_size, computation_time)
     
     #%% Merging data
