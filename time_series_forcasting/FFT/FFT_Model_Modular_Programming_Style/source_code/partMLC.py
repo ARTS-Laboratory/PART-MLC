@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Feb 17 01:11:27 2022
+PART-MLC
+
+Python package for function withing PART-MLC
 
 @author: Puja Chowdhury
 
@@ -19,8 +21,6 @@ Chowdhury, P., Conrad, P., Bakos, J. D., & Downey, A. (2021, September). Time Se
 """
 
 #%% Load Libraries
-import IPython as IP
-IP.get_ipython().magic('reset -sf')
 import numpy as np
 from numpy import fft, math
 import sklearn
@@ -129,6 +129,7 @@ def fft_prediction(acceleration, time, Ts, Fs, input_time, time_to_predict, seri
         td_section['signal_pred_data'].append(signal_pred)
     return td_section
 
+
 #%% Plotting function
 def plotting_all(time, acceleration, Ts, Fs, Sig_pred_time_all, x_test_data_all,signal_pred_data_all):
     '''
@@ -231,8 +232,6 @@ def plotting_all(time, acceleration, Ts, Fs, Sig_pred_time_all, x_test_data_all,
     plt.grid()
     plt.legend(loc=2,ncol=2,facecolor='white', edgecolor = 'black', framealpha=1)
 
-    plt.savefig('../plots/output_plot.png', dpi=400)
-    plt.savefig('../plots/output_plot.pdf', dpi=400)
 
 #%% range function with floats
 def range_with_floats(start, stop, step):
