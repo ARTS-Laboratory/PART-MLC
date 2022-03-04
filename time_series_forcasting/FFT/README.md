@@ -25,6 +25,7 @@ There are two script of python
     This script has two functions inside:
     
     (a)fft_prediction:  FFT based prediction model works
+    
     (b) range_with_floats:This function increments the start number by step until it reaches stop.
     link: https://www.dataquest.io/blog/python-range-tutorial/
 3. For user just need to run_partMLC.py
