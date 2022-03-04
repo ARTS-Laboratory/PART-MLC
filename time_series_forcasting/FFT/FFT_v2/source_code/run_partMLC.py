@@ -19,7 +19,7 @@ IP.get_ipython().magic('reset -sf')
 import numpy as np
 import pickle
 from numpy import math
-from partMLC import *
+import partMLC as partMLC
 
 # Main Funtion
 # def main():
@@ -39,7 +39,7 @@ else:
 window_steps= 51200# Learning Window Length in seconds
 forcast_horizon_steps= 51200 # time of prediction
 sliding_steps= 51200 # rolling window size
-result_dict = partMLC(X, Y, window_steps, forcast_horizon_steps, sliding_steps)
+result_dict = partMLC.fft(X, Y, window_steps, forcast_horizon_steps, sliding_steps)
 
 #%% Merging data
 Sig_pred_Y_all = np.concatenate(result_dict["signal_pred_Y"], axis=0, out=None)
@@ -53,3 +53,40 @@ plotting_all(Y, X, dt, Fs, Sig_pred_Y_all, x_test_data_all,signal_pred_data_all)
 
 # if __name__ == '__main__':
 #     main()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

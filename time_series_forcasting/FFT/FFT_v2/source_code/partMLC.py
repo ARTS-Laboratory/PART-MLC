@@ -19,18 +19,17 @@ Chowdhury, P., Conrad, P., Bakos, J. D., & Downey, A. (2021, September). Y Serie
 """
 
 #%% Load Libraries
-import IPython as IP
-IP.get_ipython().magic('reset -sf')
+
 import numpy as np
 from numpy import fft, math
 import sklearn
 from sklearn.metrics import mean_absolute_error
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
+#import matplotlib.pyplot as plt
+#import matplotlib.gridspec as gridspec
 import math
 
 #%% FFT function
-def partMLC(X, Y, window_steps, forcast_horizon_steps, sliding_steps):
+def partMLC(X, Y, window_steps=widowsteps, forcast_horizon_steps, sliding_steps):
     '''
     This function used FFT based model to predict the series data.
 
