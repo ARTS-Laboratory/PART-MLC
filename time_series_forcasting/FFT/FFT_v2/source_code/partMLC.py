@@ -6,13 +6,13 @@ Created on Thu Feb 17 01:11:27 2022
 
 This is the whole FFT based prediction function.
 This script has three functions:
-    1. fft_prediction: FFT based prediction model works
+    1. partMLC: FFT based prediction model works
     2. plotting_all: this function is for plotting output of the model
     3.range_with_floats:This function increments the start number by step until it reaches stop.
     link: https://www.dataquest.io/blog/python-range-tutorial/
 
 Published Paper:
-Y Series Forecasting for Structures Subjected to Nonstationary Inputs
+Time Series Forecasting for Structures Subjected to Nonstationary Inputs
 Please cite the following work if you use this code and data:
 Chowdhury, P., Conrad, P., Bakos, J. D., & Downey, A. (2021, September). Y Series Forecasting for Structures Subjected to Nonstationary Inputs. In Smart Materials, Adaptive Structures and Intelligent Systems (Vol. 85499, p. V001T03A008). American Society of Mechanical Engineers.
 
