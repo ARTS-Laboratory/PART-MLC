@@ -22,7 +22,7 @@ import numpy as np
 from numpy import fft, math
 
 #%% FFT function
-def fft_prediction(X,dt,forcast_horizon_steps):
+def fft_prediction(X,dt,forcast_horizon_steps,returnVector=True,freqList=[]):
     '''
     This function used FFT based model to predict the series data.
 

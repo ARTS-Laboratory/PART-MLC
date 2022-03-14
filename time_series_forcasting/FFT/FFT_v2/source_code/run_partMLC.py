@@ -12,14 +12,33 @@ Chowdhury, P., Conrad, P., Bakos, J. D., & Downey, A. (2021, September). Time Se
 
 """
 #%% Load Libraries
+import IPython as IP
+IP.get_ipython().magic('reset -sf')
+
 import pickle
 import partMLC as partMLC
+import matplotlib.pyplot as plt
+
+plt.close('all')
+
 
 # Main Funtion
+
 #%% Load data
 data_pickle = pickle.load(open('../data/nonstationarity_data.pkl', 'rb'))
+
 X=data_pickle['acceleration']
 dt=1.9531228885135136e-05
+
 # User defined parameters
-forcast_horizon_steps= 51200 # prediction length # here 1s=51200 samples/sec
-prediction_signal=partMLC.fft_prediction(X,dt,forcast_horizon_steps)
+forcast_horizon_steps= 500 # prediction length # here 1s=51200 samples/sec
+
+
+xx = X[0:5000]
+
+y = prediction_signal=partMLC.fft_prediction(xx,dt,forcast_horizon_steps)
+
+
+
+
+
