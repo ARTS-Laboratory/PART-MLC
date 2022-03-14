@@ -45,8 +45,7 @@ def fft_prediction(X,dt,forcast_horizon_steps):
     Fs =math.floor(1/Ts) # Sample Rate
     forcast_horizon = math.ceil(forcast_horizon_steps*Ts)
     x_test_data = X[int((forcast_horizon)* Fs):]
-    td_section = {"Y_org" : [], "x_train_data" : [], "x_test_data": [], "signal_pred_Y": [], 
-                  "signal_pred_data": []}
+    td_section = {"x_train_data" : [],"signal_pred_data": []}
     # split the data
     count=0
     for i in range_with_floats(0,len(X), forcast_horizon):
@@ -58,12 +57,8 @@ def fft_prediction(X,dt,forcast_horizon_steps):
         if len(x_train_data_org)==0:
             break
         Y_org=Y[starting_point:ending_point_train]
-        td_section['Y_org'].append(Y_org)
         td_section['x_train_data'].append(x_train_data_org)
-        td_section['x_test_data'].append(x_test_data_split)
-        td_section['signal_pred_Y'].append(Y[ending_point_train:ending_point_train+int(round(forcast_horizon*Fs))])
         count+=1
-
     # Process the data
     for select_idx in range(count):
 
@@ -104,7 +99,8 @@ def fft_prediction(X,dt,forcast_horizon_steps):
         signal_pred = extrapolation[int(round((forcast_horizon)* Fs)):int(math.ceil((forcast_horizon + forcast_horizon) * Fs))]    
         signal_pred_list.append(signal_pred)
         td_section['signal_pred_data'].append(signal_pred)
-    return td_section
+        signal_pred_data_all = np.concatenate(td_section["signal_pred_data"], axis=0, out=None)
+    return signal_pred_data_all
 
 #%% range function with floats
 def range_with_floats(start, stop, step):
