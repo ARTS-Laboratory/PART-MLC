@@ -31,7 +31,7 @@ X=data_pickle['acceleration']
 dt=1.9531228885135136e-05
 
 # User defined parameters
-forcast_horizon_steps= 500 # prediction length # here 1s=51200 samples/sec
+forcast_horizon_steps= 5000 # prediction length # here 1s=51200 samples/sec
 
 
 xx = X[0:5000]
