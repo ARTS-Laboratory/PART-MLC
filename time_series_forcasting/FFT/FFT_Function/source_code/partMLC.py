@@ -22,6 +22,12 @@ import numpy as np
 from numpy import fft, math
 
 #%% FFT function
+
+# Notes for Puja, 
+# 1. If not frequencies provided, it should return an error. Or, use all frequences and return a warning.
+
+
+
 def fft_prediction(X,dt,forcast_horizon_steps,returnVector=True,freq_list=[]):
     '''
     This function used FFT based model to predict the series data.
@@ -51,9 +57,7 @@ def fft_prediction(X,dt,forcast_horizon_steps,returnVector=True,freq_list=[]):
     x_test_data = X[int((forcast_horizon)* Fs):]
     td_section = {"x_train_data" : [],"signal_pred_data": []}
     ## sorted  frequencies with more impact on the original FFT
-    if freq_list==[]:
-        freq_list = [20,60,70,80,100,120,140,150,160,170,180,200,220,240,
-                -20,-60,-70,-80,-100,-120,-140,-150,-160,-170,-180,-200,-220,-240]
+
     # split the data
     count=0
     for i in range_with_floats(0,len(X), forcast_horizon):
