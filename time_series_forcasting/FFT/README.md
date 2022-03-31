@@ -3,7 +3,7 @@
 ## FFT_Function
 ## How to run:
 There are two script of python
-1. run_partMLC.py:  This is for user. Data input and tuning the configuration and plot the output by this one (reduce configuration options, more user friendly compare to FFT_V1).
+1. run_partMLC.py:  This is for user. Data input and tuning the configuration 
 2. partMLC.py:  This is the whole FFT based prediction function.
     This script has two functions inside:
     

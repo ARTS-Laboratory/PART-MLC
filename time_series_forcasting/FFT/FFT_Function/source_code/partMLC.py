@@ -20,8 +20,11 @@ Chowdhury, P., Conrad, P., Bakos, J. D., & Downey, A. (2021, September). Y Serie
 #%% Load Libraries
 import numpy as np
 from numpy import fft, math
+import warnings
 
 #%% FFT function
+
+
 def fft_prediction(X,dt,forcast_horizon_steps,returnVector=True,freq_list=[]):
     '''
     This function used FFT based model to predict the series data.
@@ -35,7 +38,8 @@ def fft_prediction(X,dt,forcast_horizon_steps,returnVector=True,freq_list=[]):
     forcast_horizon : integer
         length of prediction.
     returnVector: boolean
-        if True return the whole predicted signal, if false return the only last predicted signal
+         Returns the vector of data up to forcast_horizon_steps if returnVector=True
+         Just returns 1 point forcast_horizon_steps into the future if returnVector=False
     freq_list: list
         sorted  frequencies with more impact on the original FFT
     Returns
@@ -47,16 +51,17 @@ def fft_prediction(X,dt,forcast_horizon_steps,returnVector=True,freq_list=[]):
     Y = np.array([*range_with_floats(0,len(X)*dt, dt)])[0:len(X)]
     Ts=(Y[-1]-Y[0])/Y.shape[0] 
     Fs =math.floor(1/Ts) # Sample Rate
+    series_length = math.ceil(len(X)*Ts)
     forcast_horizon = math.ceil(forcast_horizon_steps*Ts)
     x_test_data = X[int((forcast_horizon)* Fs):]
     td_section = {"x_train_data" : [],"signal_pred_data": []}
     ## sorted  frequencies with more impact on the original FFT
     if freq_list==[]:
-        freq_list = [20,60,70,80,100,120,140,150,160,170,180,200,220,240,
-                -20,-60,-70,-80,-100,-120,-140,-150,-160,-170,-180,-200,-220,-240]
+        warnings.warn("No frequency list has been provided. Running for all the frequencies.")
+
     # split the data
     count=0
-    for i in range_with_floats(0,len(X), forcast_horizon):
+    for i in range_with_floats(0,len(X), forcast_horizon_steps):
         starting_point=int(round(i*Fs))    
         ending_point_train =int(round(starting_point + (forcast_horizon * Fs)))
         ending_point_test = int(round(starting_point + (forcast_horizon * Fs)))
@@ -73,6 +78,7 @@ def fft_prediction(X,dt,forcast_horizon_steps,returnVector=True,freq_list=[]):
         x_train_data = td_section['x_train_data'][select_idx]
         # Processing frequency:
         n = x_train_data.size
+        # print(n)
         t1 = np.arange(0, n)
         p = np.polyfit(t1, x_train_data, 1) # find the trend 
         x_notrend = x_train_data - p[0] * t1  # detrended x
@@ -80,6 +86,8 @@ def fft_prediction(X,dt,forcast_horizon_steps,returnVector=True,freq_list=[]):
         f = fft.fftfreq(n, d=Ts)  # frequencies
 
         fq_idx=[]
+        if freq_list==[]:
+            freq_list = f #If not frequencies provided, it should return an error. Or, use all frequences and return a warning.
         for fq in freq_list:
             if len(np.where(np.isclose(f, fq))[0])==0: # if not able to find any frequencies from freq_list don't append
                 pass
@@ -87,7 +95,7 @@ def fft_prediction(X,dt,forcast_horizon_steps,returnVector=True,freq_list=[]):
                 fq_idx.append(int(np.where(np.isclose(f, fq))[0]))
 
 
-        n_predict = math.floor(Fs * (forcast_horizon))
+        n_predict = forcast_horizon_steps # how long want to predict signal
         t1 = np.arange(0, n + n_predict)
         restored_sig = np.zeros(t1.size)
         signal_pred_list=[]
@@ -103,18 +111,16 @@ def fft_prediction(X,dt,forcast_horizon_steps,returnVector=True,freq_list=[]):
         if select_idx == 0:
             signal_pred = extrapolation
         else:
-            signal_pred = extrapolation[int(round((forcast_horizon)* Fs)):int(math.ceil((forcast_horizon + forcast_horizon) * Fs))]    
-        
+            signal_pred = extrapolation[int(round((forcast_horizon)* Fs)):int(round((forcast_horizon + forcast_horizon) * Fs))]    
         signal_pred_list.append(signal_pred)
         td_section['signal_pred_data'].append(signal_pred)
         signal_pred_data_all = np.concatenate(td_section["signal_pred_data"], axis=0, out=None)
         
     if returnVector:
-        return signal_pred_data_all
-    else:
         return signal_pred_data_all[len(X):]
-    # return signal_pred_data_all
-
+    else:
+        return signal_pred_data_all[-1]
+    
 #%% range function with floats
 def range_with_floats(start, stop, step):
     '''
