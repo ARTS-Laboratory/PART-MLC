@@ -44,10 +44,10 @@ forcast_horizon_steps= 5120 # prediction length # here 1s=51200 samples/sec
 
 xx = X[0:5120]
 
-y1_withoutFreq = prediction_signal=partMLC.fft_prediction(xx,dt,forcast_horizon_steps,True)# Returns the vector of data up to forcast_horizon_steps if returnVector=True
-y1_withFreq = prediction_signal=partMLC.fft_prediction(xx,dt,forcast_horizon_steps,True, freq_list) # Returns the vector of data up to forcast_horizon_steps if returnVector=True
-y2_withoutFreq = prediction_signal=partMLC.fft_prediction(xx,dt,forcast_horizon_steps,False)# Just returns 1 point forcast_horizon_steps into the future if returnVector=False
-y2_withFreq = prediction_signal=partMLC.fft_prediction(xx,dt,forcast_horizon_steps,False, freq_list)# Just returns 1 point forcast_horizon_steps into the future if returnVector=False
+y1_withoutFreq = prediction_signal=partMLC.fft_prediction(xx,dt,forcast_horizon_steps,returnVector=True)# Returns the vector of data up to forcast_horizon_steps if returnVector=True
+y1_withFreq = prediction_signal=partMLC.fft_prediction(xx,dt,forcast_horizon_steps,freq_list,returnVector=True) # Returns the vector of data up to forcast_horizon_steps if returnVector=True
+y2_withoutFreq = prediction_signal=partMLC.fft_prediction(xx,dt,forcast_horizon_steps,returnVector=False)# Just returns 1 point forcast_horizon_steps into the future if returnVector=False
+y2_withFreq = prediction_signal=partMLC.fft_prediction(xx,dt,forcast_horizon_steps,freq_list,returnVector=False)# Just returns 1 point forcast_horizon_steps into the future if returnVector=False
 
 
 

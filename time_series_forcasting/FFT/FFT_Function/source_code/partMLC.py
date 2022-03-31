@@ -25,7 +25,7 @@ import warnings
 #%% FFT function
 
 
-def fft_prediction(X,dt,forcast_horizon_steps,returnVector=True,freq_list=[]):
+def fft_prediction(X,dt,forcast_horizon_steps,freq_list=[],returnVector=[]):
     '''
     This function used FFT based model to predict the series data.
 
