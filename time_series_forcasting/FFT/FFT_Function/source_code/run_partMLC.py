@@ -30,13 +30,13 @@ forcast_horizon_steps= 5120 # prediction length # here 1s=51200 samples/sec
 
 # Input length should capture the minimum frequency. Here minimum freq is 20hz
 
-# xx = X[0:51200]
+xx = X[0:5120]
 
-y1_withoutFreq = prediction_signal=partMLC.fft_prediction(X,dt,forcast_horizon_steps,True)
-y1_withFreq = prediction_signal=partMLC.fft_prediction(X,dt,forcast_horizon_steps,True, freq_list) #if True return the whole predicted signal, if false return the only last predicted signal
+y1_withoutFreq = prediction_signal=partMLC.fft_prediction(xx,dt,forcast_horizon_steps,True)
+y1_withFreq = prediction_signal=partMLC.fft_prediction(xx,dt,forcast_horizon_steps,True, freq_list) #if True return the whole predicted signal, if false return the only last predicted signal
 
-y2_withoutFreq = prediction_signal=partMLC.fft_prediction(X,dt,forcast_horizon_steps,False)
-y2_withFreq = prediction_signal=partMLC.fft_prediction(X,dt,forcast_horizon_steps,False, freq_list)
+y2_withoutFreq = prediction_signal=partMLC.fft_prediction(xx,dt,forcast_horizon_steps,False)
+y2_withFreq = prediction_signal=partMLC.fft_prediction(xx,dt,forcast_horizon_steps,False, freq_list)
 
 
 
