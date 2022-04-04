@@ -40,7 +40,7 @@ freq_list = [20,60,70,80,100,120,140,150,160,170,180,200,220,240,-20,-60,-70,-80
 forcast_horizon_steps= 5120 # prediction length # here 1s=51200 samples/sec
 
 # Input length should capture the minimum frequency. 
-xx_length = 5000
+xx_length = 51200
 xx = X[0:xx_length]
 
 y1_withoutFreq = prediction_signal=partMLC.fft_prediction(xx,dt,forcast_horizon_steps,returnVector=True)# Returns the vector of data up to forcast_horizon_steps if returnVector=True
@@ -48,19 +48,15 @@ y1_withFreq = prediction_signal=partMLC.fft_prediction(xx,dt,forcast_horizon_ste
 y2_withoutFreq = prediction_signal=partMLC.fft_prediction(xx,dt,forcast_horizon_steps,returnVector=False)# Just returns 1 point forcast_horizon_steps into the future if returnVector=False
 y2_withFreq = prediction_signal=partMLC.fft_prediction(xx,dt,forcast_horizon_steps,freq_list,returnVector=False)# Just returns 1 point forcast_horizon_steps into the future if returnVector=False
 
-
-forcast = np.hstack((np.zeros(xx_length),y1_withoutFreq))
-
-
-
+# plot the code
+forcast = np.hstack((np.full([xx_length], np.nan),y1_withoutFreq))
 plt.figure()
-plt.plot(forcast,label='forcast')
-plt.plot(X[0:forcast.shape[0]],label='truth')
-plt.plot(xx,label='data')
-plt.xlabel('time (s)')
+plt.plot(X[0:forcast.shape[0]],color='gray',label='truth')
+plt.plot(forcast,':',label='forcast')
+plt.plot(xx,'--',label='training data')
+plt.xlabel('time (data points)')
 plt.ylabel('acceleration (g)')
 plt.legend()
-
 plt.tight_layout()
 
 

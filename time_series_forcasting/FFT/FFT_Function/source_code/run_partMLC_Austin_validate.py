@@ -37,10 +37,10 @@ dt=1.9531228885135136e-05
 
 # User defined parameters
 freq_list = [20,60,70,80,100,120,140,150,160,170,180,200,220,240,-20,-60,-70,-80,-100,-120,-140,-150,-160,-170,-180,-200,-220,-240]# sorted  frequencies with more impact on the original FFT
-forcast_horizon_steps= 5120 # prediction length # here 1s=51200 samples/sec
+forcast_horizon_steps= 512 # prediction length # here 1s=51200 samples/sec
 
 # Input length should capture the minimum frequency. 
-xx_length = 5000
+xx_length = 5120
 xx = X[0:xx_length]
 
 y1_withoutFreq = prediction_signal=partMLC.fft_prediction(xx,dt,forcast_horizon_steps,returnVector=True)# Returns the vector of data up to forcast_horizon_steps if returnVector=True
@@ -50,7 +50,7 @@ y2_withFreq = prediction_signal=partMLC.fft_prediction(xx,dt,forcast_horizon_ste
 
 
 # plot the code
-forcast = np.hstack((np.full([xx_length], np.nan),y1_withoutFreq))
+forcast = np.hstack((np.full([xx_length], np.nan),y1_withFreq))
 
 plt.figure()
 plt.plot(X[0:forcast.shape[0]],color='gray',label='truth')
