@@ -68,10 +68,10 @@ def fft_prediction(X,dt,forcast_horizon_steps,freq_list=[],returnVector=[]):
     if freq_list==[]:
         freq_list = f #If no frequencies provided, it should return an error. Or, use all frequences and return a warning.
     for fq in freq_list:
-        if len(np.where(np.isclose(f, fq))[0])==0: # if not able to find any frequencies from freq_list don't append
+        if len(np.where(np.isclose(f, fq,atol=0.1))[0])==0: # if not able to find any frequencies from freq_list don't append
             pass
         else:
-            fq_idx.append(int(np.where(np.isclose(f, fq))[0]))
+            fq_idx.append(int(np.where(np.isclose(f, fq,atol=0.1))[0]))
 
 
     n_predict = forcast_horizon_steps # how long want to predict signal
@@ -85,7 +85,7 @@ def fft_prediction(X,dt,forcast_horizon_steps,freq_list=[],returnVector=[]):
 
     trend=p[0]
     signal_pred = restored_sig +trend * t1
-        
+    
     if returnVector:
         return signal_pred[len(X):]
     else:
