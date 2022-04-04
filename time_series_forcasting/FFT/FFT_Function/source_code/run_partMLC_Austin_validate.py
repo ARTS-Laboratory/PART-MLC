@@ -49,18 +49,16 @@ y2_withoutFreq = prediction_signal=partMLC.fft_prediction(xx,dt,forcast_horizon_
 y2_withFreq = prediction_signal=partMLC.fft_prediction(xx,dt,forcast_horizon_steps,freq_list,returnVector=False)# Just returns 1 point forcast_horizon_steps into the future if returnVector=False
 
 
-forcast = np.hstack((np.zeros(xx_length),y1_withoutFreq))
-
-
+# plot the code
+forcast = np.hstack((np.full([xx_length], np.nan),y1_withoutFreq))
 
 plt.figure()
-plt.plot(forcast,label='forcast')
-plt.plot(X[0:forcast.shape[0]],label='truth')
-plt.plot(xx,label='data')
-plt.xlabel('time (s)')
+plt.plot(X[0:forcast.shape[0]],color='gray',label='truth')
+plt.plot(forcast,':',label='forcast')
+plt.plot(xx,'--',label='training data')
+plt.xlabel('time (data points)')
 plt.ylabel('acceleration (g)')
 plt.legend()
-
 plt.tight_layout()
 
 
