@@ -40,15 +40,18 @@ freq_list = [20,60,70,80,100,120,140,150,160,170,180,200,220,240,-20,-60,-70,-80
 forcast_horizon_steps= 5000 # prediction length # here 1s=51200 samples/sec
 
 # Input length should capture the minimum frequency. 
-xx_length = 50000
+xx_length = 51200
 xx = X[0:xx_length]
 
+# window = np.hanning(xx.shape[0])
+# xx = xx *window
 
 #%% plot the results using all freqs
 y1_withoutFreq = prediction_signal=partMLC.fft_prediction(xx,dt,forcast_horizon_steps,returnVector=True)# Returns the vector of data up to forcast_horizon_steps if returnVector=True
 
 # plot the code
 forcast = np.hstack((np.full([xx_length], np.nan),y1_withoutFreq))
+
 
 plt.figure()
 plt.title('Without Freq')
