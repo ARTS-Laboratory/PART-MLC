@@ -19,13 +19,13 @@ Chowdhury, P., Conrad, P., Bakos, J. D., & Downey, A. (2021, September). Y Serie
 
 #%% Load Libraries
 import numpy as np
-from numpy import fft, math
+# from numpy import fft, math
 import warnings
 
 #%% FFT function
 
 
-def fft_prediction(X,dt,forcast_horizon_steps,freq_list=[],returnVector=[]):
+def fft_prediction(X,dt,forcast_horizon_steps,freq_list=[],returnVector=True):
     '''
     This function used FFT based model to predict the series data.
 
@@ -49,47 +49,50 @@ def fft_prediction(X,dt,forcast_horizon_steps,freq_list=[],returnVector=[]):
         otherwise it will return the last sample point of the predicted vector.
 
     '''
-    Y = np.array([*range_with_floats(0,len(X)*dt, dt)])[0:len(X)]
-    Ts=(Y[-1]-Y[0])/Y.shape[0]
-    forcast_horizon = math.ceil(forcast_horizon_steps*Ts)
+    # Set up new time related items. 
+    tt = np.array([*range_with_floats(0,len(X)*dt, dt)])[0:len(X)]
+    Ts=(tt[-1]-tt[0])/tt.shape[0]
+    # Detrending and taking FFT
+    n = X.size
+    t1 = np.arange(0, n)
+    p = np.polyfit(t1, X, 1) # find the trend
+    x_notrend = X - p[0] * t1  # detrended x
+    x_freqdom = np.fft.fft(x_notrend,n=int(1/Ts))  # detrended x in frequency domain
+    f = np.fft.fftfreq(len(x_freqdom), d=Ts)  # frequencies
+    
+    # build the index of freqency values
+    freq_idx=[]
     if freq_list==[]:
         warnings.warn("No frequency list has been provided. Running for all the frequencies.")
-
-    x_train_data = X
-    # Processing frequency:
-    n = x_train_data.size
-    t1 = np.arange(0, n)
-    p = np.polyfit(t1, x_train_data, 1) # find the trend
-    x_notrend = x_train_data - p[0] * t1  # detrended x
-    x_freqdom = fft.fft(x_notrend)  # detrended x in frequency domain
-    f = fft.fftfreq(n, d=Ts)  # frequencies
-
-    fq_idx=[]
-    if freq_list==[]:
-        freq_list = f #If no frequencies provided, it should return an error. Or, use all frequences and return a warning.
-    for fq in freq_list:
-        if len(np.where(np.isclose(f, fq,atol=0.1))[0])==0: # if not able to find any frequencies from freq_list don't append
-            pass
-        else:
-            fq_idx.append(int(np.where(np.isclose(f, fq,atol=0.1))[0]))
+        freq_list = f #If no frequencies provided, it will return a warning and use all frequences.
+        freq_idx = list(range(len(freq_list)))
+    else:
+        for fq in freq_list:
+            a = np.isclose(f, fq,atol=0.1) 
+            b = np.where(a)[0] # find true indcies 
+            freq_idx.append(int(b))
 
 
-    n_predict = forcast_horizon_steps # how long want to predict signal
-    t1 = np.arange(0, n + n_predict)
-    restored_sig = np.zeros(t1.size)
 
-    for j in fq_idx:
+    # creates vecotrs for rebuilding the signal
+    t2 = np.arange(0, n + forcast_horizon_steps)
+    restored_sig = np.zeros(t2.size)
+
+    for j in freq_idx:
         ampli = np.absolute(x_freqdom[j]) /n  # find amplitude
         phase = np.angle(x_freqdom[j])  # find phase
-        restored_sig += ampli * np.cos(2 * np.pi * (f[j] / (n / forcast_horizon)) * t1 + phase) # restored signal with respect to phase,amplitude and frequencies
+        freq_rad_per_sec = 2 * np.pi * (f[j]) # report the frequency in rad for the cos function
+        freq_rad_per_sample = freq_rad_per_sec * Ts # returns frequency in rad_per_sample. 
+        restored_sig += ampli * np.cos(freq_rad_per_sample * t2 + phase) # restored signal with respect to phase,amplitude and frequencies
+        
 
     trend=p[0]
-    signal_pred = restored_sig +trend * t1
+    Y = restored_sig +trend * t2
     
     if returnVector:
-        return signal_pred[len(X):]
+        return Y[len(X):]
     else:
-        return signal_pred[-1]
+        return Y[-1]
     
 #%% range function with floats
 def range_with_floats(start, stop, step):
