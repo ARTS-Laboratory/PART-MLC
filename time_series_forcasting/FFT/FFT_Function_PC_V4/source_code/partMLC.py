@@ -11,15 +11,14 @@ This script has three functions:
     link: https://www.dataquest.io/blog/python-range-tutorial/
 
 Published Paper:
-Y Series Forecasting for Structures Subjected to Nonstationary Inputs
+Time Series Forecasting for Structures Subjected to Nonstationary Inputs
 Please cite the following work if you use this code and data:
-Chowdhury, P., Conrad, P., Bakos, J. D., & Downey, A. (2021, September). Y Series Forecasting for Structures Subjected to Nonstationary Inputs. In Smart Materials, Adaptive Structures and Intelligent Systems (Vol. 85499, p. V001T03A008). American Society of Mechanical Engineers.
+Chowdhury, P., Conrad, P., Bakos, J. D., & Downey, A. (2021, September). Time Series Forecasting for Structures Subjected to Nonstationary Inputs. In Smart Materials, Adaptive Structures and Intelligent Systems (Vol. 85499, p. V001T03A008). American Society of Mechanical Engineers.
 
 """
 
 #%% Load Libraries
 import numpy as np
-# from numpy import fft, math
 import warnings
 
 #%% FFT function
