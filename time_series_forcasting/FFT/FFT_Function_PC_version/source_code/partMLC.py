@@ -11,15 +11,18 @@ This script has three functions:
     link: https://www.dataquest.io/blog/python-range-tutorial/
 
 Published Paper:
-Y Series Forecasting for Structures Subjected to Nonstationary Inputs
+Time Series Forecasting for Structures Subjected to Nonstationary Inputs
 Please cite the following work if you use this code and data:
-Chowdhury, P., Conrad, P., Bakos, J. D., & Downey, A. (2021, September). Y Series Forecasting for Structures Subjected to Nonstationary Inputs. In Smart Materials, Adaptive Structures and Intelligent Systems (Vol. 85499, p. V001T03A008). American Society of Mechanical Engineers.
+Chowdhury, P., Conrad, P., Bakos, J. D., & Downey, A. (2021, September). Time Series Forecasting for Structures Subjected to Nonstationary Inputs. In Smart Materials, Adaptive Structures and Intelligent Systems (Vol. 85499, p. V001T03A008). American Society of Mechanical Engineers.
 
 """
 
 #%% Load Libraries
 import numpy as np
+<<<<<<< HEAD:time_series_forcasting/FFT/FFT_Function_PC_version/source_code/partMLC.py
 from numpy import fft, math
+=======
+>>>>>>> 3d7693b12d2430610d82eedd1e4a1238bb44555f:time_series_forcasting/FFT/FFT_Function_PC_V4/source_code/partMLC.py
 import warnings
 
 #%% FFT function
@@ -132,3 +135,7 @@ def range_with_floats(start, stop, step):
     while stop > start:
         yield start
         start += step
+<<<<<<< HEAD:time_series_forcasting/FFT/FFT_Function_PC_version/source_code/partMLC.py
+=======
+        
+>>>>>>> 3d7693b12d2430610d82eedd1e4a1238bb44555f:time_series_forcasting/FFT/FFT_Function_PC_V4/source_code/partMLC.py
