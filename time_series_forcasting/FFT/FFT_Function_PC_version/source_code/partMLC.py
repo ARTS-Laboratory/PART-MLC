@@ -19,10 +19,6 @@ Chowdhury, P., Conrad, P., Bakos, J. D., & Downey, A. (2021, September). Time Se
 
 #%% Load Libraries
 import numpy as np
-<<<<<<< HEAD:time_series_forcasting/FFT/FFT_Function_PC_version/source_code/partMLC.py
-from numpy import fft, math
-=======
->>>>>>> 3d7693b12d2430610d82eedd1e4a1238bb44555f:time_series_forcasting/FFT/FFT_Function_PC_V4/source_code/partMLC.py
 import warnings
 
 #%% FFT function
@@ -76,8 +72,8 @@ def fft_prediction(X,dt,forcast_horizon_steps,freq_list=[],returnVector=True):
     else:
         pass
     n_prime = int((2 ** q) * (1 / Ts)) # new input length
-    x_freqdom = fft.fft(x_notrend[0:n_prime],n=n_prime) # detrended x in frequency domain
-    f = fft.fftfreq(len(x_freqdom), d=Ts)  # frequencies
+    x_freqdom = np.fft.fft(x_notrend[0:n_prime],n=n_prime) # detrended x in frequency domain
+    f = np.fft.fftfreq(len(x_freqdom), d=Ts)  # frequencies
     
    # build the index of freqency values
     freq_idx=[]
