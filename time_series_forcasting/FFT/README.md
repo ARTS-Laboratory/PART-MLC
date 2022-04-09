@@ -14,7 +14,7 @@ There are two script of python
 3. For user just need to run_partMLC.py
 4. data folder has data what is used.
 5. Please cite the following work if you use this code and data:  Chowdhury, P., Conrad, P., Bakos, J. D., & Downey, A. (2021, September). Time Series Forecasting for Structures Subjected to Nonstationary Inputs. In Smart Materials, Adaptive Structures and Intelligent Systems (Vol. 85499, p. V001T03A008). American Society of Mechanical Engineers.
-
+6.
 
 
 
