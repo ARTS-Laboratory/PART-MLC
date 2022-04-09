@@ -131,7 +131,3 @@ def range_with_floats(start, stop, step):
     while stop > start:
         yield start
         start += step
-<<<<<<< HEAD:time_series_forcasting/FFT/FFT_Function_PC_version/source_code/partMLC.py
-=======
-        
->>>>>>> 3d7693b12d2430610d82eedd1e4a1238bb44555f:time_series_forcasting/FFT/FFT_Function_PC_V4/source_code/partMLC.py
