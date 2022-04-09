@@ -19,7 +19,7 @@ Chowdhury, P., Conrad, P., Bakos, J. D., & Downey, A. (2021, September). Y Serie
 
 #%% Load Libraries
 import numpy as np
-# from numpy import fft, math
+from numpy import fft, math
 import warnings
 
 #%% FFT function
@@ -44,23 +44,39 @@ def fft_prediction(X,dt,forcast_horizon_steps,freq_list=[],returnVector=True):
         sorted  frequencies with more impact on the original FFT
     Returns
     -------
-    signal_pred : List if returnVector==True, else Float
+    Y : List if returnVector==True, else Float
         If returnVector==True, then it will return the predicted vector,
         otherwise it will return the last sample point of the predicted vector.
 
     '''
-    # Set up new time related items. 
+     # Set up new time related items. 
     tt = np.array([*range_with_floats(0,len(X)*dt, dt)])[0:len(X)]
     Ts=(tt[-1]-tt[0])/tt.shape[0]
+    
     # Detrending and taking FFT
+    n = X.size
     n = X.size
     t1 = np.arange(0, n)
     p = np.polyfit(t1, X, 1) # find the trend
-    x_notrend = X - p[0] * t1  # detrended x
-    x_freqdom = np.fft.fft(x_notrend,n=int(1/Ts))  # detrended x in frequency domain
-    f = np.fft.fftfreq(len(x_freqdom), d=Ts)  # frequencies
+    x_notrend = X- p[0] * t1  # detrended x in frequency domain
     
-    # build the index of freqency values
+    #%% building a new input length which will be increase or decrease by power of two
+    q = 0 # input length  controlling parameter
+    if n< int(1/Ts):
+        while (n - int((2 ** q) * (1 / Ts))) < 0:
+            q-=1
+            if q<-1:
+                warnings.warn("The input length must be greater than the half of the sample rate for better prediction")
+    elif n> int(1/Ts):
+        while (n - int((2 ** q) * (1 / Ts))) > int((2 ** q) * (1 / Ts)):
+            q+=1
+    else:
+        pass
+    n_prime = int((2 ** q) * (1 / Ts)) # new input length
+    x_freqdom = fft.fft(x_notrend[0:n_prime],n=n_prime) # detrended x in frequency domain
+    f = fft.fftfreq(len(x_freqdom), d=Ts)  # frequencies
+    
+   # build the index of freqency values
     freq_idx=[]
     if freq_list==[]:
         warnings.warn("No frequency list has been provided. Running for all the frequencies.")
@@ -72,20 +88,17 @@ def fft_prediction(X,dt,forcast_horizon_steps,freq_list=[],returnVector=True):
             b = np.where(a)[0] # find true indcies 
             freq_idx.append(int(b))
 
-
-
     # creates vecotrs for rebuilding the signal
     t2 = np.arange(0, n + forcast_horizon_steps)
     restored_sig = np.zeros(t2.size)
-
+    # rebuild the signal
     for j in freq_idx:
-        ampli = np.absolute(x_freqdom[j]) /n  # find amplitude
+        ampli = np.absolute(x_freqdom[j]) /n_prime  # find amplitude
         phase = np.angle(x_freqdom[j])  # find phase
         freq_rad_per_sec = 2 * np.pi * (f[j]) # report the frequency in rad for the cos function
-        freq_rad_per_sample = freq_rad_per_sec * Ts # returns frequency in rad_per_sample. 
+        freq_rad_per_sample = freq_rad_per_sec*Ts # returns frequency in rad_per_sample.Reason: f[j]*Ts: to make sampling frequency cause only f[j] is just frequency
         restored_sig += ampli * np.cos(freq_rad_per_sample * t2 + phase) # restored signal with respect to phase,amplitude and frequencies
-        
-
+   # add trend
     trend=p[0]
     Y = restored_sig +trend * t2
     
@@ -93,6 +106,7 @@ def fft_prediction(X,dt,forcast_horizon_steps,freq_list=[],returnVector=True):
         return Y[len(X):]
     else:
         return Y[-1]
+
     
 #%% range function with floats
 def range_with_floats(start, stop, step):
@@ -118,4 +132,3 @@ def range_with_floats(start, stop, step):
     while stop > start:
         yield start
         start += step
-        

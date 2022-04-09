@@ -37,7 +37,7 @@ dt=1.9531228885135136e-05
 
 # User defined parameters
 freq_list = [20,60,70,80,100,120,140,150,160,170,180,200,220,240,-20,-60,-70,-80,-100,-120,-140,-150,-160,-170,-180,-200,-220,-240]# sorted  frequencies with more impact on the original FFT
-forcast_horizon_steps= 51200 # prediction length # here 1s=51200 samples/sec
+forcast_horizon_steps= 5120 # prediction length # here 1s=51200 samples/sec
 
 # Input length should capture the minimum frequency. 
 xx_length = 50000
@@ -62,7 +62,7 @@ plt.plot(forcast,':',label='forcast')
 plt.plot(xx,'--',label='training data')
 plt.xlabel('time (data points)')
 plt.ylabel('acceleration (g)')
-plt.xlim([45000,65000])
+plt.xlim([15000,70000])
 plt.legend()
 plt.tight_layout()
 
