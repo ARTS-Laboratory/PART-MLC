@@ -54,22 +54,21 @@ def fft_prediction(X,dt,forcast_horizon_steps,freq_list=[],returnVector=True):
     
     # Detrending and taking FFT
     n = X.size
-    n = X.size
     t1 = np.arange(0, n)
     p = np.polyfit(t1, X, 1) # find the trend
     x_notrend = X- p[0] * t1  # detrended x in frequency domain
     
     #%% building a new input length which will be increase or decrease by power of two
     q = 0 # input length  controlling parameter
-    if n< int(1/Ts):
-        while (n - int((2 ** q) * (1 / Ts))) < 0:
+    if n<1/Ts:
+        while (n - (2 ** q) * (1 / Ts)) < 0:
             q-=1
             if q<-1:
                 warnings.warn("The input length must be greater than the half of the sample rate for better prediction")
-    elif n> int(1/Ts):
-        while (n - int((2 ** q) * (1 / Ts))) > int((2 ** q) * (1 / Ts)):
+    elif n> 1/Ts:
+        while (n - (2 ** q) * (1 / Ts)) > (2 ** q) * (1 / Ts):
             q+=1
-    else:
+    else:       # catches the n=1/Ts, in that case q=0
         pass
     n_prime = int((2 ** q) * (1 / Ts)) # new input length
     x_freqdom = np.fft.fft(x_notrend[0:n_prime],n=n_prime) # detrended x in frequency domain
@@ -97,7 +96,8 @@ def fft_prediction(X,dt,forcast_horizon_steps,freq_list=[],returnVector=True):
         freq_rad_per_sec = 2 * np.pi * (f[j]) # report the frequency in rad for the cos function
         freq_rad_per_sample = freq_rad_per_sec*Ts # returns frequency in rad_per_sample.Reason: f[j]*Ts: to make sampling frequency cause only f[j] is just frequency
         restored_sig += ampli * np.cos(freq_rad_per_sample * t2 + phase) # restored signal with respect to phase,amplitude and frequencies
-   # add trend
+    
+    # add trend
     trend=p[0]
     Y = restored_sig +trend * t2
     
