@@ -41,7 +41,7 @@ dt=1.9531228885135136e-05
 forcast_horizon_steps = 5000 # prediction length # here 1s=51200 samples/sec
 
 # Input length should capture the minimum frequency. 
-xx_length = 30000
+xx_length = 3000
 xx = X[0:xx_length]
 
 # window = np.hanning(xx.shape[0])
@@ -89,6 +89,8 @@ forcast_horizon_steps = 5000 # prediction length # here 1s=51200 samples/sec
 # Input length should capture the minimum frequency. 
 for xx_length in range (5000,70000,2500):
     xx = X[0:xx_length]
+    
+    print(xx_length)
     
     # window = np.hanning(xx.shape[0])
     # xx = xx *window
