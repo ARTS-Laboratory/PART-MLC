@@ -4,7 +4,7 @@ clear all;
 % data=xlsread('FFT_matlab\nonstationarity_data.csv');
 % time=data(:,1); % 1st column
 % X_data=data(:,2);% 2nd column
-data = load('FFT_matlab\data.mat');
+data = load('data.mat');
 time=data.data(:,1)'; % 1st column
 X_data=data.data(:,2)';% 2nd column
 plot(X_data,time);
@@ -15,6 +15,7 @@ dt=1.9531228885135136e-05;
 
 % User defined parameters
 freq_list = [20,60,70,80,100,120,140,150,160,170,180,200,220,240,-20,-60,-70,-80,-100,-120,-140,-150,-160,-170,-180,-200,-220,-240];
+% freq_list=[];
 % sorted  frequencies with more impact on the original FFT
 forcast_horizon_steps= 5120; % prediction length # here 1s=51200 samples/sec
 
@@ -91,7 +92,21 @@ else
     Y_pred = Y(end);
 end
 
+y1_withoutFreq = Y_pred;
+% plot the code
+forcast = cat(2,NaN(1,xx_length,'single'),y1_withoutFreq);
 
+
+plt.figure()
+plt.title('Without Freq')
+plt.plot(X[0:forcast.shape[0]],color='gray',label='truth')
+plt.plot(forcast,':',label='forcast')
+plt.plot(xx,'--',label='training data')
+plt.xlabel('time (data points)')
+plt.ylabel('acceleration (g)')
+plt.xlim([15000,70000])
+plt.legend()
+plt.tight_layout()
 
 
 

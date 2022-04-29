@@ -7,7 +7,7 @@ Ts=(tt(end)-tt(1))/size(tt,2);
 n = size(X,2);
 t1 = 1:n;
 p = polyfit(t1, X, 1); % find the trend
-trend=p(2);
+trend=p(1);
 x_notrend = X- (trend* t1(1,:));  % detrended x in frequency domain
 
 %% building a new input length which will be increase or decrease by power of two
@@ -16,7 +16,7 @@ if n<1/Ts
     while (n - (2 ^ q) * (1 / Ts)) < 0
         q=q-1;
         if q<-1
-            fprintf("The input length must be greater than the half of the sample rate for better prediction");
+            fprintf("The input length must be greater than the half of the sample rate for better prediction\n");
         end
     end
 elseif n> 1/Ts
@@ -39,7 +39,7 @@ if isempty(freq_list)
 else
     for i=1:size(freq_list,2)
         b = find(abs(f-freq_list(i))<0.1); 
-        freq_idx(end+1)=b;
+        freq_idx(end+1)=b;      
     end
 end
 
