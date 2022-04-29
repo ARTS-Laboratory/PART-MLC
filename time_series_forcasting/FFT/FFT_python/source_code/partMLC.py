@@ -40,7 +40,8 @@ def fft_prediction(X,dt,forcast_horizon_steps,freq_list=[],returnVector=True):
          Returns the vector of data up to forcast_horizon_steps if returnVector=True
          Just returns 1 point forcast_horizon_steps into the future if returnVector=False
     freq_list: list
-        sorted  frequencies with more impact on the original FFT
+        sorted  frequencies with more impact on the original FFT. In no freq_list 
+        provided, runns for all frequencies.
     Returns
     -------
     Y : List if returnVector==True, else Float
