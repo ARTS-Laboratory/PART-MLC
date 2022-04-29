@@ -71,21 +71,21 @@ plt.tight_layout()
 
 
 
-# #%% plot the results using all freqs
-# y1_withFreq = prediction_signal=partMLC.fft_prediction(xx,dt,forcast_horizon_steps,freq_list,returnVector=True) # Returns the vector of data up to forcast_horizon_steps if returnVector=True
+#%% plot the results using all freqs
+y1_withFreq = prediction_signal=partMLC.fft_prediction(xx,dt,forcast_horizon_steps,freq_list,returnVector=True) # Returns the vector of data up to forcast_horizon_steps if returnVector=True
 
-# # plot the code
-# forcast = np.hstack((np.full([xx_length], np.nan),y1_withFreq))
+# plot the code
+forcast = np.hstack((np.full([xx_length], np.nan),y1_withFreq))
 
-# plt.figure()
-# plt.title('With Freq')
-# plt.plot(X[0:forcast.shape[0]],color='gray',label='truth')
-# plt.plot(forcast,':',label='forcast')
-# plt.plot(xx,'--',label='training data')
-# plt.xlabel('time (data points)')
-# plt.ylabel('acceleration (g)')
-# plt.legend()
-# plt.tight_layout()
+plt.figure()
+plt.title('With Freq')
+plt.plot(X[0:forcast.shape[0]],color='gray',label='truth')
+plt.plot(forcast,':',label='forcast')
+plt.plot(xx,'--',label='training data')
+plt.xlabel('time (data points)')
+plt.ylabel('acceleration (g)')
+plt.legend()
+plt.tight_layout()
 
 
 
