@@ -2,7 +2,7 @@ clear; %clear workspace;
 %clc; %clear cammand window;
 %close all; %close all figures whose handles are visible;
 
-data_fl_nm="../data/data_set_3.lvm";
+data_fl_nm="data/data_set_3.lvm";
 
 data_lvm=lvm_import(data_fl_nm); %original data;
 data_t=data_lvm.Segment1.data(:,1);
