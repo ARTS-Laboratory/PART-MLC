@@ -3,7 +3,7 @@ Matlab code for fft approach, originally written by Anzhelika Kolinko and called
 1. Using an IFFT approach. 
 
 ## fft_ifft.m
-1. The maian code
+1. The main code
 
 ## sandbox.m
 1. Code runs, not sure what it does.
