@@ -1,5 +1,33 @@
 function Y_pred = fft_prediction(X,dt,forcast_horizon_steps,freq_list,returnVector)
-% Set up new time related items. 
+%FFT_PREDICTION This function used FFT based model to predict the series data.
+%{ 
+This function used FFT based model to predict the series data.
+
+Parameters
+----------
+X : numpy.ndarray
+    This model is taking X data. But any series data can be used instead of X.
+dt : float
+    time difference between two sample points.
+forcast_horizon : integer
+    length of prediction.
+returnVector: boolean
+     Returns the vector of data up to forcast_horizon_steps if returnVector=True
+     Just returns 1 point forcast_horizon_steps into the future if returnVector=False
+freq_list: list
+    sorted  frequencies with more impact on the original FFT. In no freq_list 
+    provided, runns for all frequencies.
+Returns
+-------
+Y : List if returnVector==True, else Float
+    If returnVector==True, then it will return the predicted vector,
+    otherwise it will return the last sample point of the predicted vector.
+
+%}
+
+
+
+% Set up new time related items.
 tt = 0:dt:(size(X,2)*dt)-dt;
 Ts=(tt(end)-tt(1))/size(tt,2);
 
@@ -23,7 +51,7 @@ elseif n> 1/Ts
     while (n - (2 ^ q) * (1 / Ts)) > (2 ^ q) * (1 / Ts)
         q=q+1;
     end
-else      
+else
     % catches the n=1/Ts, in that case q=0
 end
 n_prime = floor((2 ^ q) * (1 / Ts)); % new input length % Alert: fix -1 later.
@@ -38,8 +66,8 @@ if isempty(freq_list)
     freq_idx = 1:size(freq_list,2);
 else
     for i=1:size(freq_list,2)
-        b = find(abs(f-freq_list(i))<0.1); 
-        freq_idx(end+1)=b;      
+        b = find(abs(f-freq_list(i))<0.1);
+        freq_idx(end+1)=b;
     end
 end
 
