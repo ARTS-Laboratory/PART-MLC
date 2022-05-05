@@ -12,7 +12,7 @@ freq_list = [20,60,70,80,100,120,140,150,160,170,180,200,220,240,-20,-60,-70,-80
 forcast_horizon_steps= 5120; % prediction length # here 1s=51200 samples/sec
 
 % Input length should capture the minimum frequency. 
-xx_length = 29000; 
+xx_length = 51200; 
 xx = X_data(1:xx_length);
 %% Running the function
 % y1_withoutFreq =fft_prediction(xx,dt,forcast_horizon_steps,[],true); % Returns the vector of data up to forcast_horizon_steps if returnVector=True
