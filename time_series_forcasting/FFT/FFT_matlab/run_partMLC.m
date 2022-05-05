@@ -1,5 +1,7 @@
-clc;
-clear all;
+clc
+clear
+close all
+
 %% Load data
 % data=xlsread('FFT_matlab\nonstationarity_data.csv');
 data = load('data.mat');
@@ -12,13 +14,19 @@ freq_list = [20,60,70,80,100,120,140,150,160,170,180,200,220,240,-20,-60,-70,-80
 forcast_horizon_steps= 5120; % prediction length # here 1s=51200 samples/sec
 
 % Input length should capture the minimum frequency. 
+<<<<<<< HEAD
 xx_length = 51200; 
+=======
+xx_length = length(X_data)*0.6; 
+>>>>>>> 3839bde7e3b611555bcf69b199a02109305ac173
 xx = X_data(1:xx_length);
+
 %% Running the function
 % y1_withoutFreq =fft_prediction(xx,dt,forcast_horizon_steps,[],true); % Returns the vector of data up to forcast_horizon_steps if returnVector=True
 y1_withFreq = fft_prediction(xx,dt,forcast_horizon_steps,freq_list,true); % Returns the vector of data up to forcast_horizon_steps if returnVector=True
 % y2_withoutFreq = fft_prediction(xx,dt,forcast_horizon_steps,[],false);  % Just  returns 1 point forcast_horizon_steps into the future if returnVector=False
 y2_withFreq = fft_prediction(xx,dt,forcast_horizon_steps,freq_list,false); %Just returns 1 point forcast_horizon_steps into the future if returnVector=False
+
 
 %% plot the code
 %%%% plot for with frequency list
@@ -33,6 +41,10 @@ xlabel('time (data points)');
 ylabel('acceleration (g)');
 hold off
 legend
+
+
+
+
 %% Plot for without frequency
 % figure(2)
 % forecast = cat(2,NaN(1,xx_length),y1_withoutFreq);

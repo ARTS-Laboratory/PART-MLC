@@ -20,8 +20,9 @@ There are two script of python
 
 ## Matlab
 1. Copy of python function
-2.run_partMLC.m:  This is for user. Data input and tuning the configuration 
-3.fft_prediction.m:  This is the whole FFT based prediction function.. 
+2. run_partMLC.m:  This is for user. Data input and tuning the configuration 
+3. fft_prediction.m:  This is the whole FFT based prediction function.
+4. data.mat is used for data.
 
 
 ## LabVIEW
