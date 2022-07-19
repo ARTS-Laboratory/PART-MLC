@@ -1,1 +1,3 @@
 ./data/*
+# Ignore all results folders for now
+./*results/*
