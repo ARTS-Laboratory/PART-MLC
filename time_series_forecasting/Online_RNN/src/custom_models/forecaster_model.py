@@ -5,7 +5,7 @@ import torch
 from multiprocessing import Process, Lock, Pipe, Queue
 import numpy as np
 
-from forecaster.constants import PIPE_SENTINEL
+from constants import PIPE_SENTINEL
 
 # Types
 from multiprocessing.queues import Queue as QueueType
@@ -17,7 +17,7 @@ from queue import Empty, Full
 
 
 # Class implementation
-from forecaster.custom_models.recurrent_nn_pytorch import RecurrentNeuralNetworkTorch
+from custom_models.recurrent_nn_pytorch import RecurrentNeuralNetworkTorch
 
 
 class Forecaster:

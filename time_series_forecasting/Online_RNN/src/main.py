@@ -7,8 +7,8 @@ import numpy as np
 import torch
 import pandas as pd
 
-from forecaster.custom_models.forecaster_model import update_weights, run_forecaster, Forecaster
-from forecaster.custom_models.recurrent_nn_pytorch import RecurrentNeuralNetworkTorch
+from custom_models.forecaster_model import update_weights, run_forecaster, Forecaster
+from custom_models.recurrent_nn_pytorch import RecurrentNeuralNetworkTorch
 
 
 # TODO separate discriminators or set entire program up to remove autograd in predictor
@@ -41,7 +41,8 @@ def load_data_numpy(filename: str):
 
 
 def load_data_pandas(filename: str):
-    return pd.read_table(filename, usecols=[0, 1, 2, 3], header=22)
+    table = pd.read_table(filename, usecols=[0, 1, 2, 3], header=21, delim_whitespace=True)
+    return table
 
 
 def parse_data(filename: str):
@@ -54,12 +55,11 @@ def copy_weights(model, model_2):
         if name_1 == name_2:  # this should always be true, faster to check all at once
             param_1.data = param_2.data
 
-
 def main():
     history_length = 10  # how many points of data to use for inference
     # Load data
     filename = os.path.join(
-        os.pardir, os.pardir, 'Dataset-4-Univariate-signal-with-non-stationarity',
+        os.pardir, 'data', 'Dataset-4-Univariate-signal-with-non-stationarity',
         'data', 'data_III', 'Test 1.lvm')
     # Pick a method
     # data = parse_data(filename)
