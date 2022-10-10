@@ -5,6 +5,15 @@ from custom_models.recurrent_nn_pytorch import RecurrentNeuralNetworkTorch
 
 class TorchRNNExperiment(RecurrentNeuralNetworkTorch):
     def __init__(self, history_length, loss_fn, num_layers=1, data_type=torch.float32):
+        """
+
+        :param int history_length: How many features the model looks at at one time.
+        :param loss_fn: Loss function to apply to model
+        :type loss_fn:
+        :param int num_layers: Number of layers model has. Defaults to 1.
+        :param data_type: Type of data to feed into model
+        :type data_type: torch.dtype
+        """
         super(TorchRNNExperiment, self).__init__()
         self.dtype = data_type
         self.input_length = history_length
@@ -24,6 +33,8 @@ class TorchRNNExperiment(RecurrentNeuralNetworkTorch):
             :param hidden: Hidden state of the model.
             :type input_val: torch.Tensor. Should have size
              (sequence length, input size) or (batch, sequence length, input size)
+            :returns: Tuple of prediction output and state.
+            :rtype: tuple[torch.Tensor, torch.Tensor]
 
             """
         # input_val.dtype(self.dtype)
