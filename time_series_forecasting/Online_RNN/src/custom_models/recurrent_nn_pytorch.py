@@ -17,6 +17,9 @@ class RecurrentNeuralNetworkTorch(torch.nn.Module):
     def loss(self, prediction, actual):
         raise NotImplementedError
 
+    def make_hidden_state(self):
+        raise NotImplementedError
+
 
 if __name__ == '__main__':
     pass
