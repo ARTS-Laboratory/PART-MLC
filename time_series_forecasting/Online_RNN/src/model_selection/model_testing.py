@@ -199,9 +199,10 @@ def main():
     # Data prep
     time = data.loc[:, 'X_Value'].array
     samp_freq = (time[-1] - time[0]) / time.size
-    test_sequence_length = 1_000  # Total number of points to be trained/tested on
-    prediction_gap = 100  # How far into the future model predicts
-    train_index, test_index = 45, 15_000
+    train_sequence_length = 100_000
+    test_sequence_length = 200_000  # Total number of points to be trained/tested on
+    prediction_gap = 10  # How far into the future model predicts
+    train_index, test_index = 10, 200_000
     accel_str = 'Acceleration'
     train_data, train_actual = get_training_data(
         data, train_index, prediction_gap, train_sequence_length,
@@ -224,8 +225,8 @@ def main():
     def snr_eval(x, y):
         return snr(x, y, samp_freq)
     # Model construction and training
-    rnn_model = TorchRNNExperiment(history_length=1, loss_fn=torch.nn.MSELoss(), num_layers=2, data_type=torch.float32)
-    optimizer = torch.optim.SGD(rnn_model.parameters(), lr=1e-4)
+    rnn_model = TorchRNNExperiment(history_length=1, loss_fn=torch.nn.MSELoss(), num_layers=1, data_type=torch.float32)
+    optimizer = torch.optim.SGD(rnn_model.parameters(), lr=0.073024)
 
     rnn_trac, rnn_snr = evaluate_rnn_model(
         rnn_model, test_data, test_actual, rnn_model.random_hidden(),
@@ -234,7 +235,7 @@ def main():
     print('Starting training')
     rnn_loss = train_rnn_offline(
         rnn_model, optimizer, train_data, expected_set=train_actual,
-        sequence_length=50, epochs=8)  # This return may change to dict
+        sequence_length=2, epochs=1)  # This return may change to dict
     print('End of training')
     rnn_loss = np.sqrt(rnn_loss.numpy())
     rnn_loss_fig = loss_graph(rnn_loss)
@@ -257,12 +258,13 @@ def main():
         eval_fn=[trac, snr_eval])
     print(f'RNN - TRAC score: {rnn_trac}, SNR score: {rnn_snr}')
     # plt.show()
-    lstm_model = TorchLSTMExperiment(history_length=1, loss_fn=torch.nn.MSELoss(), data_type=torch.float32)
-    lstm_optim = torch.optim.SGD(lstm_model.parameters(), lr=1e-4)
+    # LSTM Data
+    lstm_model = TorchLSTMExperiment(history_length=1, loss_fn=torch.nn.MSELoss(), num_layers=6, data_type=torch.float32)
+    lstm_optim = torch.optim.SGD(lstm_model.parameters(), lr=0.07022907)
     print('Starting training')
     lstm_losses = train_rnn_offline(
         lstm_model, lstm_optim, train_data, expected_set=train_actual,
-        sequence_length=50, epochs=8)  # This return may change to dict
+        sequence_length=1, epochs=1)  # This return may change to dict
     print('End of training')
     lstm_losses = np.sqrt(torch.as_tensor(lstm_losses).detach().numpy())
     lstm_loss_fig = loss_graph(lstm_losses)
