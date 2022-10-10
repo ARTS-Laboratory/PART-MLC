@@ -148,8 +148,8 @@ def loss_graph(losses):
         :returns: Handle to figure
     """
     fig = plt.figure()
-    plt.plot(losses)
-    plt.xlabel('Epochs')
+    plt.semilogy(losses)
+    plt.xlabel('Time units')
     plt.ylabel('Loss (RMSE)')  # This will need to change if loss isn't rmse
     return fig
 
