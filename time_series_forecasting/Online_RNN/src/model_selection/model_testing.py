@@ -60,7 +60,7 @@ def train_rnn_offline(model, optimizer, input_dataset, expected_set, sequence_le
             total_loss: torch.Tensor = 0.0
             hidden_state = model.random_hidden()
             for idx in range(sequence_length):
-                prediction, hidden_state = model.predict(input_data, hidden_state)
+                prediction, hidden_state = model(input_data, hidden_state)
                 total_loss += model.loss(prediction, expected)
             losses.append(total_loss)
             total_loss.backward()
@@ -85,11 +85,11 @@ def evaluate_rnn_model(model, input_dataset, expected_set, eval_fn):
         raise NotImplementedError('Written not tested.')
         predictions = list()
         for input_data in input_dataset:
-            prediction, _ = model.predict(input_data)
+            prediction, _ = model(input_data)
             predictions.append(prediction)
         predictions = torch.as_tensor(predictions)
     elif num_dims == 3:
-        prediction, _ = model.predict(input_dataset)
+        prediction, _ = model(input_dataset)
     if torch.is_same_size(predictions, expected_set):
         return eval_fn(
             expected_set.view(-1).detach().numpy(),
@@ -115,23 +115,29 @@ def evaluate_rnn_model(model, input_dataset, expected_set, initial_hidden, eval_
         :rtype: torch.Tensor or List[torch.Tensor]
     """
     num_dims = input_dataset.dim()
-    if num_dims == 4:
-        raise NotImplementedError('Written not tested.')
+    if num_dims == 3:
+        # raise NotImplementedError('Written not tested.')
         predictions = list()
+        hidden = initial_hidden
         for input_data in input_dataset:
-            prediction, _ = model.predict(input_data, initial_hidden)
+            prediction, hidden = model(input_data, hidden)
             predictions.append(prediction)
-        predictions = torch.as_tensor(predictions)
-    elif num_dims == 3:
-        predictions, _ = model.predict(input_dataset, initial_hidden)
+        predictions = torch.reshape(torch.as_tensor(predictions), expected_set.size())
+    # elif num_dims == 3:
+    #     predictions, _ = model.predict(input_dataset, initial_hidden)
     if torch.is_same_size(predictions, expected_set):
-        return eval_fn(
-            expected_set.view(-1).detach().numpy(),
-            predictions.view(-1).detach().numpy())
+        if callable(eval_fn):
+            return eval_fn(
+                expected_set.view(-1).detach().numpy(),
+                predictions.view(-1).detach().numpy())
+        elif all(map(callable, eval_fn)):
+            return [
+                fn(expected_set.view(-1).detach().numpy(),
+                   predictions.view(-1).detach().numpy()) for fn in eval_fn]
+        else:
+            raise NotImplementedError
     else:
         raise ArithmeticError('Expected values do not have same size as predicted.')
-    # predictions = model.predict(input_dataset)
-    return eval_fn(expected_set, predictions)
 
 
 def rnn_model_train_eval(train_set, test_set, history_length=10):
