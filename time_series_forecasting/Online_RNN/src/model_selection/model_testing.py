@@ -140,20 +140,6 @@ def evaluate_rnn_model(model, input_dataset, expected_set, initial_hidden, eval_
         raise ArithmeticError('Expected values do not have same size as predicted.')
 
 
-def rnn_model_train_eval(train_set, test_set, history_length=10):
-    # Load data
-    filename = os.path.join(
-        os.pardir, os.pardir, 'data', 'Dataset-4-Univariate-signal-with-non-stationarity',
-        'data', 'data_III', 'Test 1.lvm')
-    data = load_data_numpy(filename)
-    training_data = torch.from_numpy(np.expand_dims(data[:100, 1], axis=0).astype(np.float32))
-    # evaluation_data =
-    learner = TorchRNNExperiment(history_length, loss_fn=torch.nn.MSELoss, num_layers=1, data_type=torch.float32)
-    losses = train_offline(learner, train_set, test_set, epochs=1)
-    trac_score = evaluate_rnn_model(learner, test_set, trac)
-    snr_score = evaluate_rnn_model(learner, test_set, snr)
-
-
 def loss_graph(losses):
     """ Return graph of loss over training.
 
