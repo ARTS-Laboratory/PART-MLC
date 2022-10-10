@@ -61,6 +61,9 @@ class TorchRNNExperiment(RecurrentNeuralNetworkTorch):
                 self.num_layers if not bidirect else 2 * self.num_layers,
                 self.hidden_features)
 
+    def make_hidden_state(self, batched=0, bidirect=False):
+        return self.random_hidden(batched, bidirect)
+
 
 class TorchLSTMExperiment(RecurrentNeuralNetworkTorch):
     def __init__(self, history_length, loss_fn, num_layers=1, data_type=torch.float32):
@@ -118,3 +121,41 @@ class TorchLSTMExperiment(RecurrentNeuralNetworkTorch):
         return (
             self.random_hidden_single(batched=batched, bidirect=bidirect),
             self.random_hidden_single(batched=batched, bidirect=bidirect))
+
+    def make_hidden_state(self, batched=0, bidirect=False):
+        return self.random_hidden(batched, bidirect)
+
+
+# todo finish making this model
+class TorchMLP(torch.nn.Module):
+    def __init__(self, input_size, output_size, loss_fn=None):
+        super(TorchMLP, self).__init__()
+        self.loss_fn = loss_fn
+        self.hidden_1, self.hidden_2 = 2, 2
+        self.layer_1 = torch.nn.Linear(input_size, self.hidden_1)
+        self.layer_2 = torch.nn.Linear(self.hidden_1, self.hidden_2)
+        self.layer_3 = torch.nn.Linear(self.hidden_2, output_size)
+        self.relu = torch.nn.ReLU()
+
+    # hidden_state is added as a parameter to remain unused
+    def forward(self, input_val, hidden_state=None):
+        val = self.layer_1(input_val)
+        val = self.layer_2(self.relu(val))
+        val = self.layer_3(self.relu(val))
+        return self.relu(val)
+
+    def predict(self, input_val, hidden_state):
+        return self.forward(input_val, hidden_state)
+
+    def loss(self, prediction, actual):
+        return self.loss_fn(prediction, actual)
+
+    def random_hidden(self, batched=0, bidirect=False):
+        """ Generate random values for initial hidden state and initial cell state.
+
+            :returns: Tuple of random values. Does not currently account for projections.
+        """
+        return None
+
+    def make_hidden_state(self, batched=0, bidirect=False):
+        return None
