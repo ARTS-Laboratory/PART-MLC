@@ -6,6 +6,16 @@ from numpy import ndarray
 from scipy.signal import periodogram
 
 
+def rms(signal):
+    mean = np.mean(signal)
+    return np.sqrt(np.sum((signal - mean) ** 2))
+
+
+def rmse(actual: ndarray, predicted) -> float:
+    """ Return root mean square of vector."""
+    return np.sqrt(np.mean((actual - predicted) ** 2))
+
+
 def root_mean_square_frequency(vector: ndarray, time_step: float) -> float:
     """ Return root mean square frequency of signal.
 
@@ -49,9 +59,18 @@ def trac_1d_calc(ref_signal: ndarray, predicted_signal: ndarray) -> float:
     return numerator/denominator
 
 
-def snr(ref_signal, predicted_signal, sampling_frequency):
-    """ Implementation of signal-to_noise ratio"""
-    ref = root_mean_square_frequency(ref_signal, sampling_frequency)
-    pred = root_mean_square_frequency(predicted_signal - ref_signal, sampling_frequency)
-    return 20 * np.log10(ref/pred)
+def snr(ref_signal: ndarray, predicted_signal: ndarray, sampling_frequency: float) -> float:
+    """ Implementation of signal-to_noise ratio.
+
+    :param ndarray ref_signal: Signal to be compared to.
+    :param ndarray predicted_signal: Signal to compare.
+    :param float sampling_frequency: how many samples are taken per unit of time (num samples/total time)
+    :return: snr(dB) of signal.
+    :rtype: float
+    """
+    return 20 * np.log10(rms(ref_signal)/rmse(ref_signal, predicted_signal))
+    # ref = root_mean_square_frequency(ref_signal, sampling_frequency)
+    # pred = root_mean_square_frequency(predicted_signal - ref_signal, sampling_frequency)
+    # return 20 * np.log10(ref/pred)
+
 
