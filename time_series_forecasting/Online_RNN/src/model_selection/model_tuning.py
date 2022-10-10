@@ -14,6 +14,7 @@ from model_selection.model_architectures import TorchRNNExperiment, TorchLSTMExp
 from model_selection.model_testing import train_rnn_offline
 from model_selection.model_tuning_constants import OBJECTIVE_CHOICES, CONFIG_TRAINING, CONFIG_DATA_PATH, CONFIG_START, \
     ACCEL_INDEX, CONFIG_LENGTH, CONFIG_GAP
+from model_selection.utils.data_prep import get_training_data
 from utils.json_utils import save_json_file
 from utils.toml_utils import load_toml
 
@@ -42,41 +43,17 @@ def gru_objective(trial: TrialType, config):
     training()
 
 
-def get_data(filenames, folder=None):
-    """ """
-    # Load data
-    if isinstance(filenames, str):
-        # filename = os.path.join(
-        #     os.pardir, os.pardir, 'data', 'Dataset-4-Univariate-signal-with-non-stationarity',
-        #     'data', 'data_III', 'Test 1.lvm')
-        data = load_data_pandas(filenames)
-    else:
-        raise NotImplementedError('Multiple file loading not implemented yet.')
-    return data
-
-
-def get_training_data(data, start_idx, prediction_gap, length, data_idx):
-    """ Return tuple of training data.
-
-        :param data: Pandas data array to pull data from.
-        :type data: pd.DataFrame
-        :param int start_idx: Index to start collecting data from.
-        :param int prediction_gap: How many points into the future
-         model should predict.
-        :param int length: Total number of points to put in training arrays.
-        :param data_idx: Column index of data to pull values.
-        :returns: Tuple of training data and expected values.
-        :rtype: tuple[torch.Tensor, torch.Tensor]
-    """
-    train_data = torch.tensor(
-        data.loc[start_idx:start_idx + length - 1, data_idx].array,
-        dtype=torch.float32).view(-1, 1, 1)
-    train_actual = torch.tensor(
-        data.loc[
-            start_idx + prediction_gap:
-            start_idx + prediction_gap + length - 1,
-            data_idx].array, dtype=torch.float32).view(-1, 1, 1)
-    return train_data, train_actual
+# def get_data(filenames, folder=None):
+#     """ """
+#     # Load data
+#     if isinstance(filenames, str):
+#         # filename = os.path.join(
+#         #     os.pardir, os.pardir, 'data', 'Dataset-4-Univariate-signal-with-non-stationarity',
+#         #     'data', 'data_III', 'Test 1.lvm')
+#         data = load_data_pandas(filenames)
+#     else:
+#         raise NotImplementedError('Multiple file loading not implemented yet.')
+#     return data
 
 
 def training(trial: TrialType, model, config):
@@ -96,7 +73,7 @@ def training(trial: TrialType, model, config):
     # Training
     sequence_length = trial.suggest_int('sequence_length', 1, 20, step=5)
     epochs = 1
-    data = get_data(config[CONFIG_DATA_PATH])
+    data = load_data_pandas(config[CONFIG_DATA_PATH])
     train_data, train_actual = get_training_data(
         data, config[CONFIG_START], config[CONFIG_GAP],
         config[CONFIG_LENGTH], ACCEL_INDEX)
