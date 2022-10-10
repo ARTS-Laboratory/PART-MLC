@@ -186,6 +186,9 @@ def plot_predict_actual(time, predicted, actual):
 
 def main():
     # Load data
+    results_folder = os.path.join(os.curdir, 'results', '7_27_22', '')
+    res_data_folder = os.path.join(results_folder, 'data', '')
+    res_fig_folder = os.path.join(results_folder, 'figs', '')
     filename = os.path.join(
         os.pardir, os.pardir, 'data', 'Dataset-4-Univariate-signal-with-non-stationarity',
         'data', 'data_III', 'Test 1.lvm')
@@ -224,9 +227,9 @@ def main():
     rnn_model = TorchRNNExperiment(history_length=1, loss_fn=torch.nn.MSELoss(), num_layers=2, data_type=torch.float32)
     optimizer = torch.optim.SGD(rnn_model.parameters(), lr=1e-4)
 
-    rnn_batches = test_data.size(dim=0)
-    rnn_trac = evaluate_rnn_model(rnn_model, test_data, test_actual, rnn_model.random_hidden(rnn_batches), eval_fn=trac)
-    rnn_snr = evaluate_rnn_model(rnn_model, test_data, test_actual, rnn_model.random_hidden(rnn_batches), eval_fn=lambda x, y: snr(x, y, samp_freq))
+    rnn_trac, rnn_snr = evaluate_rnn_model(
+        rnn_model, test_data, test_actual, rnn_model.random_hidden(),
+        eval_fn=[trac, snr_eval])
     print(f'RNN - TRAC score: {rnn_trac}, SNR score: {rnn_snr}')
     print('Starting training')
     rnn_loss = train_rnn_offline(
@@ -235,12 +238,23 @@ def main():
     print('End of training')
     rnn_loss = np.sqrt(torch.tensor(rnn_loss).detach().numpy())
     rnn_loss_fig = loss_graph(rnn_loss)
-    test_predictions = rnn_model.forward(
+    plt.show()
+    np.save(os.path.join(res_data_folder, 'rnn_loss.npy'), rnn_loss)
+    save_fig(rnn_loss_fig, 'rnn_loss_fig.pdf', res_fig_folder)
+    save_fig(rnn_loss_fig, 'rnn_loss_fig.png', res_fig_folder, save_kwargs={'dpi': 300})
+    # plt.savefig(os.path.join(results_folder, 'rnn_loss_fig.pdf'))
+    # plt.savefig(os.path.join(results_folder, 'rnn_loss_fig.png'), dpi=300)
+    test_predictions = rnn_model(
         test_data, rnn_model.random_hidden(batched=test_data.size(dim=0)))[0].view(-1).detach().numpy()
+    np.save(os.path.join(res_data_folder, 'test_predictions.npy'), test_predictions)
     rnn_compare_fig = plot_predict_actual(test_time, test_predictions, test_actual.view(-1).detach().numpy())
-    # plt.savefig('')
-    rnn_trac = evaluate_rnn_model(rnn_model, test_data, test_actual, rnn_model.random_hidden(rnn_batches), eval_fn=trac)
-    rnn_snr = evaluate_rnn_model(rnn_model, test_data, test_actual, rnn_model.random_hidden(rnn_batches), eval_fn=lambda x, y: snr(x, y, samp_freq))
+    save_fig(rnn_compare_fig, 'rnn_prediction_fig.pdf', res_fig_folder)
+    save_fig(rnn_compare_fig, 'rnn_prediction_fig.png', res_fig_folder, save_kwargs={'dpi': 300})
+    # plt.savefig(os.path.join(results_folder, 'rnn_prediction_fig.pdf'))
+    # plt.savefig(os.path.join(results_folder, 'rnn_prediction_fig.png'), dpi=300)
+    rnn_trac, rnn_snr = evaluate_rnn_model(
+        rnn_model, test_data, test_actual, rnn_model.random_hidden(),
+        eval_fn=[trac, snr_eval])
     print(f'RNN - TRAC score: {rnn_trac}, SNR score: {rnn_snr}')
     # plt.show()
     lstm_model = TorchLSTMExperiment(history_length=1, loss_fn=torch.nn.MSELoss(), data_type=torch.float32)
@@ -252,13 +266,17 @@ def main():
     print('End of training')
     lstm_losses = np.sqrt(torch.tensor(lstm_losses).detach().numpy())
     lstm_loss_fig = loss_graph(lstm_losses)
-    test_predictions = lstm_model.forward(
+    plt.savefig(os.path.join(results_folder, 'lstm_loss_fig.pdf'))
+    plt.savefig(os.path.join(results_folder, 'lstm_loss_fig.png'), dpi=300)
+    test_predictions = lstm_model(
         test_data, lstm_model.random_hidden(batched=test_data.size(dim=0)))[0].view(-1).detach().numpy()
     lstm_compare_fig = plot_predict_actual(test_time, test_predictions, test_actual.view(-1).detach().numpy())
 
     rnn_trac = evaluate_rnn_model(lstm_model, test_data, test_actual, lstm_model.random_hidden(rnn_batches), eval_fn=trac)
     rnn_snr = evaluate_rnn_model(lstm_model, test_data, test_actual, lstm_model.random_hidden(rnn_batches), eval_fn=lambda x, y: snr(x, y, samp_freq))
     print(f'LSTM - TRAC score: {rnn_trac}, SNR score: {rnn_snr}')
+    plt.savefig(os.path.join(results_folder, 'lstm_prediction_fig.pdf'))
+    plt.savefig(os.path.join(results_folder, 'lstm_prediction_fig.png'), dpi=300)
     plt.show()
 
 
