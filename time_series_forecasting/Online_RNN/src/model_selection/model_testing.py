@@ -200,28 +200,26 @@ def main():
     prediction_gap = 100  # How far into the future model predicts
     train_index, test_index = 45, 15_000
     accel_str = 'Acceleration'
+    train_data, train_actual = get_training_data(
+        data, train_index, prediction_gap, train_sequence_length,
+        accel_str, dtype=torch.float32)
+    test_data, test_actual = get_training_data(
+        data, test_index, prediction_gap, test_sequence_length,
+        accel_str, dtype=torch.float32)
+    train_time = data.loc[
+                train_index + prediction_gap:
+                train_index + prediction_gap + train_sequence_length - 1,
+                'X_Value'].array
     test_time = data.loc[
                 test_index + prediction_gap:
                 test_index + prediction_gap + test_sequence_length - 1,
                 'X_Value'].array
-    train_data = torch.tensor(
-        data.loc[
-        train_index:train_index + test_sequence_length - 1, accel_str].array,
-        dtype=torch.float32).view(-1, 1, 1)
-    train_actual = torch.tensor(
-        data.loc[
-        train_index + prediction_gap:
-        train_index + prediction_gap + test_sequence_length - 1,
-        accel_str].array, dtype=torch.float32).view(-1, 1, 1)
-    test_data = torch.tensor(
-        data.loc[
-        test_index:test_index + test_sequence_length - 1, accel_str].array,
-        dtype=torch.float32).view(-1, 1, 1)
-    test_actual = torch.tensor(
-        data.loc[
-        test_index + prediction_gap:
-        test_index + prediction_gap + test_sequence_length - 1,
-        accel_str].array, dtype=torch.float32).view(-1, 1, 1)
+    np.save(os.path.join(res_data_folder, 'train_time.npy'), train_time)
+    np.save(os.path.join(res_data_folder, 'test_actual.npy'), test_actual)
+    np.save(os.path.join(res_data_folder, 'test_time.npy'), test_time)
+    exit()
+    def snr_eval(x, y):
+        return snr(x, y, samp_freq)
     # Model construction and training
     rnn_model = TorchRNNExperiment(history_length=1, loss_fn=torch.nn.MSELoss(), num_layers=2, data_type=torch.float32)
     optimizer = torch.optim.SGD(rnn_model.parameters(), lr=1e-4)
