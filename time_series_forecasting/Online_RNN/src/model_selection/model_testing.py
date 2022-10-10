@@ -44,6 +44,14 @@ def train_rnn_offline(model, optimizer, input_dataset, expected_set, sequence_le
 
         Model trains for given number of epochs. Each epoch, train on
         number of points equal to sequence_length
+        :param model:
+        :param optimizer:
+        :param input_dataset:
+        :param expected_set:
+        :param sequence_length:
+        :param epochs:
+        :return: Tensor of loss values
+        :rtype: torch.Tensor
     """
     losses = list()
     for epoch in range(epochs):
@@ -102,7 +110,9 @@ def evaluate_rnn_model(model, input_dataset, expected_set, initial_hidden, eval_
         :param expected_set:
         :type expected_set: torch.Tensor
         :param eval_fn: Evaluation function.
-        :type eval_fn: Callable
+        :type eval_fn: Callable or List[Callable]
+        :returns: Results of applying eval to predicted and expected sets
+        :rtype: torch.Tensor or List[torch.Tensor]
     """
     num_dims = input_dataset.dim()
     if num_dims == 4:
