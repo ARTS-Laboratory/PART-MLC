@@ -14,7 +14,7 @@ from model_selection.model_architectures import TorchRNNExperiment, TorchLSTMExp
 from model_selection.model_testing import train_rnn_offline
 from model_selection.model_tuning_constants import OBJECTIVE_CHOICES, CONFIG_TRAINING, CONFIG_DATA_PATH, CONFIG_START, \
     ACCEL_INDEX, CONFIG_LENGTH, CONFIG_GAP
-from model_selection.utils.data_prep import get_training_data
+from model_selection.data_prep import get_training_data
 from utils.json_utils import save_json_file
 from utils.toml_utils import load_toml
 
@@ -92,7 +92,7 @@ def run_study(objective, n_trials=100, show_progress_bar=False):
     """
     # new_kw = {'n_trials': 100, 'timeout': None, 'n_jobs': 1, 'show_progress_bar': False}
     # new_kw.update(kwargs)
-    study = optuna.create_study()
+    study = optuna.create_study(direction='minimize')
     study.optimize(objective, n_trials=n_trials, show_progress_bar=show_progress_bar)
     print(f'Best parameters: {study.best_params}')
     return study
@@ -121,6 +121,7 @@ def parse():
     train_config = config[CONFIG_TRAINING]
     study = choose_model_tuning(args.objective, train_config, args.n_trials, args.show_progress)
     write_study(study, args.output)
+    study.trials_dataframe().to_csv('test.csv')
     return args
 
 
