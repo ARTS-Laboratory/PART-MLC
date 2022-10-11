@@ -2,21 +2,19 @@
 
     Module to hold different types of plot for tuned models.
 """
-import argparse
 import os
 from typing import List
 
 import torch
-from mpl_toolkits import mplot3d
 import matplotlib.pyplot as plt
 import numpy as np
 
 from main import load_data_pandas
-from model_selection.model_architectures import TorchRNNExperiment, TorchLSTMExperiment
+from model_selection.model_architectures import TorchRNNExperiment
 from model_selection.model_testing import train_rnn_offline
 from model_selection.model_tuning_constants import CONFIG_DATA_PATH, CONFIG_GAP, CONFIG_LENGTH, ACCEL_INDEX, \
     CONFIG_START, CONFIG_TRAINING
-from model_selection.utils.data_prep import get_training_data
+from model_selection.data_prep import get_training_data
 from utils.matplotlib_utils import save_fig
 from utils.toml_utils import load_toml
 
