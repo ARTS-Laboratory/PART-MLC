@@ -3,7 +3,7 @@ from unittest import TestCase
 import numpy as np
 import torch
 
-from forecaster.main import TorchRNN, copy_weights
+from main import TorchRNN, copy_weights
 
 
 class Test(TestCase):
