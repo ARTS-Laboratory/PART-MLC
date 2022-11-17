@@ -1,0 +1,1 @@
+Plots for training scripts automatically save here.
