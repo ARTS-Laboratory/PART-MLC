@@ -6,13 +6,14 @@ from numpy import ndarray
 from scipy.signal import periodogram
 
 
-def rms(signal):
+def rms(signal: ndarray) -> float:
+    """ Return root mean square of signal."""
     mean = np.mean(signal)
     return np.sqrt(np.sum((signal - mean) ** 2))
 
 
 def rmse(actual: ndarray, predicted) -> float:
-    """ Return root mean square of vector."""
+    """ Return root mean square error of vector."""
     return np.sqrt(np.mean((actual - predicted) ** 2))
 
 
@@ -51,7 +52,7 @@ def trac_1d_calc(ref_signal: ndarray, predicted_signal: ndarray) -> float:
 
     :param ndarray ref_signal: Signal to be compared to.
     :param ndarray predicted_signal: Signal to compare.
-    :return: TRAC score for given pair of signals.
+    :return: TRAC score for a given pair of signals.
     :rtype: float
     """
     numerator = np.dot(ref_signal, predicted_signal)**2
@@ -59,18 +60,13 @@ def trac_1d_calc(ref_signal: ndarray, predicted_signal: ndarray) -> float:
     return numerator/denominator
 
 
-def snr(ref_signal: ndarray, predicted_signal: ndarray, sampling_frequency: float) -> float:
+def snr(ref_signal: ndarray, predicted_signal: ndarray) -> float:
     """ Implementation of signal-to_noise ratio.
 
-    :param ndarray ref_signal: Signal to be compared to.
-    :param ndarray predicted_signal: Signal to compare.
-    :param float sampling_frequency: how many samples are taken per unit of time (num samples/total time)
-    :return: snr(dB) of signal.
+    :param ref_signal: Signal to be compared to.
+    :type ref_signal: np.ndarray or List
+    :param predicted_signal: Signal to compare.
+    :type predicted_signal: np.ndarray or List
     :rtype: float
     """
     return 20 * np.log10(rms(ref_signal)/rmse(ref_signal, predicted_signal))
-    # ref = root_mean_square_frequency(ref_signal, sampling_frequency)
-    # pred = root_mean_square_frequency(predicted_signal - ref_signal, sampling_frequency)
-    # return 20 * np.log10(ref/pred)
-
-
