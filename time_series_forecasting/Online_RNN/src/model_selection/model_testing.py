@@ -39,7 +39,8 @@ def train_offline(model, optimizer, input_dataset, expected_set, epochs=1):
     return torch.as_tensor(losses)
 
 
-def train_rnn_offline(model, optimizer, input_dataset, expected_set, sequence_length, epochs=1):
+def train_rnn_offline(
+        model, optimizer, input_dataset, expected_set, sequence_length, epochs=1):
     """ Train RNN model offline and return loss.
 
         Model trains for given number of epochs. Each epoch, train on
@@ -223,9 +224,10 @@ def main():
     np.save(os.path.join(res_data_folder, 'test_time.npy'), test_time)
     exit()
     def snr_eval(x, y):
-        return snr(x, y, samp_freq)
+        return snr(x, y)
     # Model construction and training
-    rnn_model = TorchRNNExperiment(history_length=1, loss_fn=torch.nn.MSELoss(), num_layers=1, data_type=torch.float32)
+    rnn_model = TorchRNNExperiment(
+        history_length=1, loss_fn=torch.nn.MSELoss(), num_layers=1, data_type=torch.float32)
     optimizer = torch.optim.SGD(rnn_model.parameters(), lr=0.073024)
 
     rnn_trac, rnn_snr = evaluate_rnn_model(
@@ -275,7 +277,7 @@ def main():
     lstm_compare_fig = plot_predict_actual(test_time, test_predictions, test_actual.view(-1).detach().numpy())
 
     rnn_trac = evaluate_rnn_model(lstm_model, test_data, test_actual, lstm_model.random_hidden(), eval_fn=trac)
-    rnn_snr = evaluate_rnn_model(lstm_model, test_data, test_actual, lstm_model.random_hidden(), eval_fn=lambda x, y: snr(x, y, samp_freq))
+    rnn_snr = evaluate_rnn_model(lstm_model, test_data, test_actual, lstm_model.random_hidden(), eval_fn=lambda x, y: snr(x, y))
     print(f'LSTM - TRAC score: {rnn_trac}, SNR score: {rnn_snr}')
     plt.savefig(os.path.join(results_folder, 'lstm_prediction_fig.pdf'))
     plt.savefig(os.path.join(results_folder, 'lstm_prediction_fig.png'), dpi=300)
