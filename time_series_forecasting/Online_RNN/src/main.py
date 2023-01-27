@@ -2,8 +2,9 @@
     Zhymir Thompson 2022
     """
 
-
+import argparse
 import os
+import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,6 +15,8 @@ from data_transform.signal_fft import sampling_frequency
 from eval.metrics import trac, snr
 from custom_models.forecaster_model import update_weights, run_forecaster, Forecaster
 from custom_models.recurrent_nn_pytorch import RecurrentNeuralNetworkTorch
+from model_selection.data_prep import get_training_data_sliding_window
+from utils.toml_utils import load_toml
 
 
 class TorchRNN(RecurrentNeuralNetworkTorch):
@@ -34,7 +37,7 @@ class TorchRNN(RecurrentNeuralNetworkTorch):
         self.num_layers = num_layers
         self.rec_1 = torch.nn.RNN(
             history_length, self.hidden_features, num_layers=self.num_layers,
-            dtype=self.dtype, batch_first=True)
+            dtype=self.dtype, batch_first=True, bias=False)
         self.relu_1 = torch.nn.ReLU()
         self.loss_fn = loss_fn
         self.hidden_state = self.random_hidden()
@@ -83,9 +86,9 @@ class TorchMLP(RecurrentNeuralNetworkTorch):
         super(TorchMLP, self).__init__()
         self.dtype = data_type
         self.loss_fn = loss_fn
-        self.hidden_1, self.hidden_2 = 4, 4
-        self.hidden_3, self.hidden_4 = 4, 4
-        self.hidden_5, self.hidden_6 = 4, 4
+        self.hidden_1, self.hidden_2 = 8, 8
+        self.hidden_3, self.hidden_4 = 16, 16
+        self.hidden_5, self.hidden_6 = 8, 8
         # self.hidden_7, self.hidden_8 = 2, 2
         # self.hidden_9, self.hidden_10 = 2, 2
         self.layer_1 = torch.nn.Linear(input_size, self.hidden_1, dtype=self.dtype)
@@ -184,9 +187,6 @@ def plot_predict_v_actual(
     """ Plot predicted values vs actual and return figure."""
     res_dir = '' if result_dir is None else result_dir
     plt.figure()
-    # Last n points n being predictions
-    # np.save(os.path.join(res_dir, 'time.npy'), time[-data_length:])
-    # np.save(os.path.join(res_dir, '../results/main/9_18_22/rnn/actual.npy'), train_y[-data_length:])
     plot_time = param_time * 1_000
     plt.plot(plot_time, actual, label='Actual accel')
     plt.plot(plot_time, predicted, '--', label='Predicted accel')
@@ -223,18 +223,24 @@ def write_frame_to_latex(frame: pd.DataFrame, filename, folder=None):
 
     """
     tmp_folder = folder if folder else ''
-    # Sets to scientific notation
     frame.style.format(precision=3).hide(axis='index').to_latex(
         buf=os.path.join(tmp_folder, filename), hrules=True)
-    # pd.options.display.float_format = '{:.2e}'.format
-    # # TODO change to frame.style.to_latex, import jinja2 (might be wrong import)
-    # frame.to_latex(buf=os.path.join(tmp_folder, filename), index=False)
 
 
 def save_outputs(
         predictions, actual, param_time, res_dir, metrics=None,
         metric_names=None, printed_metric_names=None):
-    """ """
+    """ Save outputs of forecast to output files.
+
+        :param np.ndarray predictions: Vector of predicted values.
+        :param np.ndarray actual: Vector of measured values.
+        :param np.ndarray param_time: Vector of time data for recorded values.
+        :param res_dir: Directory path for results to be added.
+        :param metrics: List of metric functions to apply to given data.
+        :param metric_names: List of names of metrics given in metrics parameter.
+        :param printed_metric_names: List of print friendly names for given metrics.
+        :returns: None
+    """
     # Save data
     np.savetxt(os.path.join(res_dir, 'predictions.txt'), predictions)
     np.save(os.path.join(res_dir, 'predictions.npy'), predictions)
@@ -245,9 +251,12 @@ def save_outputs(
     # Metrics
     if metrics is not None and metric_names is not None:
         metrics_dict = {
-            'metric': metric_names if printed_metric_names is None else printed_metric_names}
-        metrics_dict.update({
-            'score': [metric(predictions, actual) for name, metric in zip(metric_names, metrics)]})
+            'metric': metric_names if printed_metric_names is None else printed_metric_names,
+            'score': [metric(predictions, actual) for name, metric in zip(metric_names, metrics)]}
+        # metrics_dict = {
+        #     'metric': metric_names if printed_metric_names is None else printed_metric_names}
+        # metrics_dict.update({
+        #     'score': [metric(predictions, actual) for name, metric in zip(metric_names, metrics)]})
         metrics_frame = pd.DataFrame(metrics_dict, index=metric_names)
         write_frame_to_latex(
             metrics_frame, 'metrics.tex',
@@ -257,24 +266,99 @@ def save_outputs(
 
 def get_args():
     """ Argument parsing"""
-    raise NotImplementedError
+    parse = argparse.ArgumentParser()
+    parse.add_argument('model', choices=['mlp', 'rnn'], default='rnn')
+    parse.add_argument('config_file')
+    # parse.add_argument('data_file', default=None)
+    parse.add_argument('--make_paths', action='store_true')
+    parse.add_argument('--results_dir', default=None)
+    parse.add_argument('--save', action='store_true')
+    args = parse.parse_args()
+    res_dir = os.path.join(args.results_dir, args.model)
+    if not os.path.exists(res_dir) and args.make_paths:
+        os.makedirs(os.path.join(res_dir, 'latex_tables'))
+    config = load_toml(args.config_file)
+    training_config = config['training']
+    history_length = training_config['window_size']
+    time_skip = training_config['prediction_gap']
+    time, train_x, train_y = prepare_data(
+        training_config['filepath'],
+        training_config['start_index'],
+        training_config['prediction_gap'],
+        training_config['length'] + (2 * history_length))
+    if args.model == 'rnn':
+        predictor = TorchRNN(
+            history_length, loss_fn=None, num_layers=1,
+            data_type=torch.float32)
+        learner = TorchRNN(
+            history_length, loss_fn=torch.nn.MSELoss(), num_layers=1,
+            data_type=torch.float32)
+    elif args.model == 'mlp':
+        predictor = TorchMLP(
+            history_length, loss_fn=None, data_type=torch.float32)
+        learner = TorchMLP(
+            history_length, loss_fn=torch.nn.MSELoss(), data_type=torch.float32)
+    # Evaluate model
+    results, results_2 = run_forecaster(
+        Forecaster(predictor, learner, torch.nn.MSELoss(), None),
+        train_x, history_length, time_skip)
+    # Evaluate models
+    data_length = len(results)
+    # print(data_length)
+    results = np.asarray(list(map(lambda x: x.flatten().item(), results)))
+    if args.save and res_dir is not None:
+        save_outputs(
+            results, train_y[-data_length:], time[-data_length:], res_dir,
+            [lambda x, y: snr(x, y), trac], ['SNR$_dB$', 'TRAC'])
+        plot_predict_v_actual(
+            results, train_y[-data_length:], time[-data_length:], save=True,
+            show=True, result_dir=res_dir)
+
+
+def prepare_data(data, start_idx, pred_gap, slice_length):
+    """ Take data and return correct slices.
+
+        :param data: Data to slice.
+        :type data: str or pd.DataFrame
+        :param int start_idx: Starting index for where to begin slice.
+        :param int pred_gap: Number of points between last point used for
+         inference and point to be predicted.
+        :param int slice_length: Total length of data slice
+
+    """
+    # If with pandas
+    if isinstance(data, str):  # If string assume it's a filename and load panda frame
+        data = load_data_pandas(data)
+    end = start_idx + pred_gap + slice_length + - 1
+    time = data.loc[start_idx: end, 'X_Value'].array
+    train_x = data.loc[start_idx: end, 'Acceleration'].array
+    train_y = data.loc[
+              start_idx + pred_gap: end + pred_gap, 'Acceleration'].array
+    train_x = np.expand_dims(train_x, axis=0).astype(np.float32)
+    # If with numpy
+    # if isinstance(data, str):  # If string assume it's a filename and load panda frame
+    #     data = pd.read_csv(data)
+    # end = start_idx + pred_gap + slice_length + - 1
+    # time = data[start_idx: end, 0]
+    # train_x = data[start_idx: end, 3]
+    # train_y = data[start_idx: end]
+
+    return time, train_x, train_y
 
 
 def main():
     # TODO train split function should be used to make life easy
-    res_dir = os.path.join(os.pardir, 'results', 'main', '9_22_22', 'mlp')
+    res_dir = os.path.join(os.pardir, 'results', 'main', '10_31_22', 'rnn')
     start_idx = 150_000
-    history_length = 7  # how many points of data to use for inference
+    history_length = 8  # how many points of data to use for inference
     time_skip = 10
-    length = 2_00 + (2 * history_length)  # 200_014
+    length = 20_000 + (2 * history_length)  # 200_014
     # Load data
     filename = os.path.join(
         os.pardir, 'data', 'Dataset-4-Univariate-signal-with-non-stationarity',
         'data', 'data_III', 'Test 1.lvm')
     # Pick a method
-    # data = parse_data(filename)
     data = load_data_pandas(filename)
-    # data = load_data_numpy(filename)
     time = data.loc[start_idx: start_idx + time_skip + length - 1, 'X_Value'].array
     train_x = data.loc[start_idx: start_idx + length - 1 + time_skip, 'Acceleration'].array
     train_y = data.loc[start_idx: start_idx + length - 1 + time_skip, 'Acceleration'].array
@@ -291,20 +375,23 @@ def main():
     # training_data = torch.from_numpy(np.expand_dims(data.loc[:length, 'Acceleration'].array, axis=0).astype(np.float32))
 
     # training_data = torch.from_numpy(np.expand_dims(data[:10_000, 1], axis=0).astype(np.float32))
-    results = run_forecaster(
+    results, results_2 = run_forecaster(
         Forecaster(predictor, learner, torch.nn.MSELoss, None),
         new_training_data, history_length, time_skip)
     # Evaluate models
     data_length = len(results)
-    print(len(results))
+    print(data_length)
     results = np.asarray(list(map(lambda x: x.flatten().item(), results)))
     save_outputs(
         results, train_y[-data_length:], time[-data_length:], res_dir,
-        [lambda x, y: snr(x, y, sampling_frequency(time)), trac], ['SNR$_dB$', 'TRAC'])
+        [lambda x, y: snr(x, y), trac], ['SNR$_dB$', 'TRAC'])
     plot_predict_v_actual(
         results, train_y[-data_length:], time[-data_length:], save=True,
         show=True, result_dir=res_dir)
 
 
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) > 1:
+        get_args()
+    else:
+        main()
