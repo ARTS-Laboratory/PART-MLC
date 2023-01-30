@@ -38,7 +38,7 @@ class TestPyTestMetrics:
         assert 0.422 == pytest.approx(score)
 
     def test_snr_same_signal(self):
-        score = snr(self.sine_1, self.sine_1, self.sampling_freq)
+        score = snr(self.sine_1, self.sine_1)
         print(score)
         assert True
 
