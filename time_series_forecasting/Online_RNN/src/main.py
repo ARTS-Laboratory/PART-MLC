@@ -277,6 +277,7 @@ def get_args():
     res_dir = os.path.join(args.results_dir, args.model)
     if not os.path.exists(res_dir) and args.make_paths:
         os.makedirs(os.path.join(res_dir, 'latex_tables'))
+        os.makedirs(os.path.join(res_dir, 'learner', 'latex_tables'))
     config = load_toml(args.config_file)
     training_config = config['training']
     history_length = training_config['window_size']
@@ -304,8 +305,10 @@ def get_args():
         train_x, history_length, time_skip)
     # Evaluate models
     data_length = len(results)
+    data_length_2 = len(results_2)
     # print(data_length)
     results = np.asarray(list(map(lambda x: x.flatten().item(), results)))
+    results_2 = np.asarray(list(map(lambda x: x.flatten().item(), results_2)))
     if args.save and res_dir is not None:
         save_outputs(
             results, train_y[-data_length:], time[-data_length:], res_dir,
@@ -313,6 +316,13 @@ def get_args():
         plot_predict_v_actual(
             results, train_y[-data_length:], time[-data_length:], save=True,
             show=True, result_dir=res_dir)
+        save_outputs(
+            results_2, train_y[-data_length_2:], time[-data_length_2:], os.path.join(res_dir, 'learner'),
+            [lambda x, y: snr(x, y), trac], ['SNR$_dB$', 'TRAC'])
+        plot_predict_v_actual(
+            results_2, train_y[-data_length_2:], time[-data_length_2:], save=True,
+            show=True, result_dir=os.path.join(res_dir, 'learner'))
+    # todo save results_2
 
 
 def prepare_data(data, start_idx, pred_gap, slice_length):
