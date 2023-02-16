@@ -330,7 +330,7 @@ def prepare_data(data, start_idx, pred_gap, slice_length):
     if isinstance(data, str):  # If string assume it's a filename and load panda frame
         data = load_data_pandas(data)
     end = start_idx + pred_gap + slice_length + - 1
-    time = data.loc[start_idx: end, 'X_Value'].array
+    time = data.loc[start_idx + pred_gap: end + pred_gap, 'X_Value'].array
     train_x = data.loc[start_idx: end, 'Acceleration'].array
     train_y = data.loc[
               start_idx + pred_gap: end + pred_gap, 'Acceleration'].array
