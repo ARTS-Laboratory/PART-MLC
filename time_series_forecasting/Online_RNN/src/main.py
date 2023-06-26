@@ -322,7 +322,6 @@ def get_args():
         plot_predict_v_actual(
             results_2, train_y[-data_length_2:], time[-data_length_2:], save=True,
             show=True, result_dir=os.path.join(res_dir, 'learner'))
-    # todo save results_2
 
 
 def prepare_data(data, start_idx, pred_gap, slice_length):
