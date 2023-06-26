@@ -106,6 +106,7 @@ def run_forecaster(pair: Forecaster, data, input_size, time_skip: int, use_torch
     try:
         predict.start()
         learn.start()
+        time.sleep(1.0)
         results, results_2 = push_data_to_pipes(
             data, start, end_index, time_skip, input_size, predict_parent, learn_parent)
         predict.join()
@@ -197,7 +198,7 @@ def push_data_to_pipes(
                 if hist_pipe.poll():
                     hist_out.append(hist_pipe.recv())
                     hist_ready = True
-                time.sleep(0.05)
+                time.sleep(0.08)
             if len(curr_buff) > 0:  # If buffer is not empty yet
                 if not curr_ready:  # If predictor not ready for new data, wait
                     curr_out.append(curr_pipe.recv())
