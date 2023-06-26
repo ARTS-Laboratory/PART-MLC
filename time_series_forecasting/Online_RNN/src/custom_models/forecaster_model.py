@@ -83,8 +83,6 @@ def run_forecaster(pair: Forecaster, data, input_size, time_skip: int, use_torch
     # TODO function call needs parameters predictor and learner instead of Forecaster
     # Other Process Variables
     loss_fn = torch.nn.MSELoss()
-    # loss_fn = MSETRACLoss()  # MSETRACLoss does not improve performance
-    # optimizer = torch.optim.SGD(pair.learner.parameters(), lr=0.01729518307885298)
     optimizer = torch.optim.Adam(pair.learner.parameters())
     # Shared Process Variables
     # curr_q: QueueType = Queue()
@@ -326,7 +324,7 @@ def make_predictions_torch_pipe(
         hidden = model.make_hidden_state()  # Add batch size if batched
         while data is not QUEUE_SENTINEL:
             count += 1
-            print(f'Predictor looking at data slice #{count}', flush=True)
+            # print(f'Predictor looking at data slice #{count}', flush=True)
             with torch.no_grad():
                 if isinstance(model, RecurrentNeuralNetworkTorch):
                     data = torch.as_tensor(data)
@@ -397,27 +395,6 @@ def make_predictions_torch_all_pipes(
         raise ChildProcessError('A pipe error occurred.')
     finally:
         print('Predictor pipe closed.', flush=True)
-
-
-# def make_predictions(model, queue_or_data, output_queue, lock):
-#     """ """
-#     try:
-#         lock.acquire()
-#         make_predictions(model, queue_or_data, output_queue)
-#     finally:
-#         lock.release()
-
-
-# def make_improvements_torch(
-#         learner, predictor, data, actual, loss_fn,
-#         optimizer: torch.optim.Optimizer):
-#     """ """
-#     prediction = learner.predict(data)
-#     loss = loss_fn(prediction, actual)
-#     optimizer.zero_grad()
-#     loss.backward()
-#     optimizer.step()
-#     update_weights(predictor, learner.named_parameters())
 
 
 def make_improvements_torch_pipe(
@@ -555,22 +532,6 @@ def make_improvements_torch_all_pipes(
     finally:
         print('Learner done', flush=True)
 
-
-# def make_improvements_torch_sm(
-#         learner, predictor, data, actual, loss_fn,
-#         optimizer: torch.optim.Optimizer, lock: Lock):
-#     """ """
-#     # TODO Update and add shared memory
-#     prediction = learner.predict(data)
-#     loss = loss_fn(prediction, actual)
-#     optimizer.zero_grad()
-#     loss.backward()
-#     optimizer.step()
-#     try:
-#         lock.acquire()
-#         update_weights(predictor, learner.named_parameters())
-#     finally:
-#         lock.release()
 
 def update_weights(model: torch.nn.Module, new_weights):
     """ Update weights of model.
