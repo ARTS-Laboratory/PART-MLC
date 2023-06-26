@@ -37,8 +37,7 @@ class TorchRNN(RecurrentNeuralNetworkTorch):
         self.num_layers = num_layers
         self.rec_1 = torch.nn.RNN(
             history_length, self.hidden_features, num_layers=self.num_layers,
-            dtype=self.dtype, batch_first=True, bias=False)
-        self.relu_1 = torch.nn.ReLU()
+            dtype=self.dtype, batch_first=True, bias=False, nonlinearity='tanh')
         self.loss_fn = loss_fn
         self.hidden_state = self.random_hidden()
 
