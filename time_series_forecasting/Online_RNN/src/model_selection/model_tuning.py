@@ -14,7 +14,7 @@ from model_selection.model_architectures import TorchRNNExperiment, TorchLSTMExp
 from model_selection.model_testing import train_rnn_offline
 from model_selection.model_tuning_constants import OBJECTIVE_CHOICES, CONFIG_TRAINING, CONFIG_DATA_PATH, CONFIG_START, \
     ACCEL_INDEX, CONFIG_LENGTH, CONFIG_GAP
-from model_selection.data_prep import get_training_data
+from model_selection.data_prep import get_training_data, get_training_data_sliding_window
 from utils.json_utils import save_json_file
 from utils.toml_utils import load_toml
 
@@ -22,18 +22,20 @@ from utils.toml_utils import load_toml
 def rnn_objective(trial: TrialType, config):
     # Define model
     num_layers = trial.suggest_int('num_layers', 1, 10)
-    model = TorchRNNExperiment(1, torch.nn.MSELoss(), num_layers=num_layers, data_type=torch.float32)
+    window_size = trial.suggest_int('window_size', 1, 10)
+    model = TorchRNNExperiment(window_size, torch.nn.MSELoss(), num_layers=num_layers, data_type=torch.float32)
     # Begin model training
-    score = training(trial, model, config)
+    score = training(trial, model, config, window_size)
     return score
 
 
 def lstm_objective(trial: TrialType, config):
     # Define model
     num_layers = trial.suggest_int('num_layers', 1, 10)
+    window_size = trial.suggest_int('window_size', 1, 10)
     model = TorchLSTMExperiment(1, torch.nn.MSELoss(), num_layers=num_layers, data_type=torch.float32)
     # Begin model training
-    score = training(trial, model, config)
+    score = training(trial, model, config, window_size)
     return score
 
 
@@ -56,7 +58,7 @@ def gru_objective(trial: TrialType, config):
 #     return data
 
 
-def training(trial: TrialType, model, config):
+def training(trial: TrialType, model, config, window_size):
     """
 
     :param trial:
@@ -71,11 +73,14 @@ def training(trial: TrialType, model, config):
     lr = trial.suggest_float('lr', 1e-8, 1e-1, log=True)
     optimizer = getattr(torch.optim, optimizer_name)(model.parameters(), lr=lr)
     # Training
-    sequence_length = trial.suggest_int('sequence_length', 1, 20, step=5)
+    sequence_length = trial.suggest_int('sequence_length', 1, 21, step=5)
     epochs = 1
     data = load_data_pandas(config[CONFIG_DATA_PATH])
-    train_data, train_actual = get_training_data(
-        data, config[CONFIG_START], config[CONFIG_GAP],
+    # train_data, train_actual = get_training_data(
+    #     data, config[CONFIG_START], config[CONFIG_GAP],
+    #     config[CONFIG_LENGTH], ACCEL_INDEX)
+    train_data, train_actual = get_training_data_sliding_window(
+        data, config[CONFIG_START], config[CONFIG_GAP], window_size,
         config[CONFIG_LENGTH], ACCEL_INDEX)
     rnn_loss: List[torch.Tensor] = train_rnn_offline(
         model, optimizer, train_data, expected_set=train_actual,
