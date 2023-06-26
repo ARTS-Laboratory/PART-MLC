@@ -180,10 +180,10 @@ def push_data_to_pipes(
     if isinstance(data, torch.Tensor):
         with curr_pipe, hist_pipe:
             for idx in range(start, end_index):
-                end = idx + time_skip + (input_size << 1)  # inclusive end index
-                curr_buff.append(data[:, (idx + input_size + time_skip): end].detach())
+                # end = idx + input_size + (time_skip << 1)  # inclusive end index
+                curr_buff.append(data[:, (idx + time_skip): idx + input_size + time_skip].detach())
                 hist_x_buff.append(data[:, idx: idx + input_size].detach())
-                hist_y_buff.append(data[:, end].unsqueeze(1).detach())
+                hist_y_buff.append(data[:, idx + input_size + time_skip].unsqueeze(1).detach())
                 if curr_ready:
                     curr_pipe.send(torch.cat(curr_buff))
                     curr_buff.clear()
