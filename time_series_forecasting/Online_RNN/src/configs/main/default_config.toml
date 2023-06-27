@@ -1,0 +1,10 @@
+title = "main config"
+
+[training]
+start_index = 15
+window_size = 8
+prediction_gap = 10
+length = 400_000
+filepath = "../data/Dataset-4-Univariate-signal-with-non-stationarity/data/data_III/Test 1.lvm"
+header_line = 21
+data_line = 23
