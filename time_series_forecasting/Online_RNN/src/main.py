@@ -37,8 +37,7 @@ class TorchRNN(RecurrentNeuralNetworkTorch):
         self.num_layers = num_layers
         self.rec_1 = torch.nn.RNN(
             history_length, self.hidden_features, num_layers=self.num_layers,
-            dtype=self.dtype, batch_first=True, bias=False)
-        self.relu_1 = torch.nn.ReLU()
+            dtype=self.dtype, batch_first=True, bias=False, nonlinearity='tanh')
         self.loss_fn = loss_fn
         self.hidden_state = self.random_hidden()
 
@@ -322,7 +321,6 @@ def get_args():
         plot_predict_v_actual(
             results_2, train_y[-data_length_2:], time[-data_length_2:], save=True,
             show=True, result_dir=os.path.join(res_dir, 'learner'))
-    # todo save results_2
 
 
 def prepare_data(data, start_idx, pred_gap, slice_length):

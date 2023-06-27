@@ -4,6 +4,7 @@ from unittest import TestCase
 from multiprocessing import Lock, Queue, Pipe, Process
 
 import torch
+import time
 
 # todo test this import in rest of code
 try:
@@ -57,6 +58,27 @@ class TestPredictor(TestCase):
         self.parent, self.child = Pipe()
         # self.lock = Lock()
 
+    def test_make_predictions_torch_pipe_time(self):
+        # Input instantiation
+        for data in self.input_data[0: len(self.input_data) - 2]*1_00:
+            self.input_queue.put(data)
+        for data in self.input_data:
+            self.input_queue.put(data)
+        # Function call
+        # Patching close because close works differently on same process
+        with patch.object(self.output_queue, 'close') as mock_output_close,\
+                patch.object(self.child, 'close') as mock_pipe_close:
+            start = time.perf_counter()
+            make_predictions_torch_pipe(self.mock_model, self.input_queue, self.output_queue, self.child)
+            end = time.perf_counter()
+        # Results and cleanup
+        print(f'Total Time: {end - start}, Average time: {(end - start) / ((5*1_00)+6)}')
+        self.assertTrue(self.input_queue.empty())
+        self.input_queue.close()
+        mock_output_close.assert_called_once()
+        mock_pipe_close.assert_called_once()
+        results = queue_to_list(self.output_queue)
+
     # TODO test queue failures, timeouts, check for leaks
     def test_make_predictions_mock_sub(self):
         # Input instantiation
@@ -65,7 +87,8 @@ class TestPredictor(TestCase):
             self.input_queue.put(data)
         # Function call
         with patch.object(self.output_queue, 'close') as mock_output_close:
-            make_predictions(self.mock_model, self.input_queue, self.output_queue, mock_lock)
+            make_predictions(
+                self.mock_model, self.input_queue, self.output_queue, mock_lock)
         self.assertTrue(self.input_queue.empty())
         self.input_queue.close()
         # Results and cleanup
@@ -94,13 +117,7 @@ class TestPredictor(TestCase):
         self.input_queue.close()
         mock_output_close.assert_called_once()
         mock_pipe_close.assert_called_once()
-        results = list()
-        item = self.output_queue.get()
-        while item is not None:
-            results.append(item)
-            del item
-            item = self.output_queue.get()
-        del item
+        results = queue_to_list(self.output_queue)
 
     def test_make_prediction_pipe_torch_mock_sub_model_fails_all_input_sent(self):
         # Input instantiation
@@ -135,6 +152,21 @@ class TestPredictor(TestCase):
             input_queue.close()
             mock_output_close.assert_called_once()
             mock_pipe_close.assert_called_once()
+
+    def test_make_prediction_torch_pipe_other_pipe_closed_all_input_sent(self):
+        # Input instantiation
+        self.parent.close()
+        for data in self.input_data:
+            self.input_queue.put(data)
+        # Function call, no error should occur
+        with patch.object(self.output_queue, 'close') as mock_output_close,\
+                patch.object(self.child, 'close') as mock_pipe_close:
+            make_predictions_torch_pipe(
+                self.mock_model, self.input_queue, self.output_queue, self.child)
+        # Results and cleanup
+        self.input_queue.close()
+        mock_output_close.assert_called_once()
+        mock_pipe_close.assert_called_once()
 
     # def test_make_predictions_torch_pipe(self):
     #     # Input instantiation
@@ -188,21 +220,7 @@ class TestLearner(unittest.TestCase):
         self.lock = Lock()
 
     def test_make_improvements_torch_pipe_succeeds(self):
-        # mock_model = RecurrentNeuralNetworkTorch()
         expected_call_count = len(self.expected)
-        # self.mock_model.predict = MagicMock(side_effect=iter(self.expected))
-        # input_queue = Queue()
-
-        # mock_loss_fn.backward = MagicMock()
-        # mock_optimizer = MagicMock(torch.optim.Adam)
-        # mock_optimizer.step = MagicMock()
-        # parent, child = Pipe()
-        # Expected to be used
-        # child.send = MagicMock()
-        # parent.recv = MagicMock()
-        # Not expected to be called
-        # child.recv = MagicMock()
-        # parent.send = MagicMock()
         for data, expect in zip(self.input_data, self.expected + [None]):
             self.input_queue.put((data, expect))
         with patch.object(self.child, 'close') as mock_child_close:
@@ -216,83 +234,27 @@ class TestLearner(unittest.TestCase):
         # self.assertEqual(expected_call_count, mock_optimizer.step.call_count)
 
     def test_make_improvements_torch_pipe_optimizer_fails(self):
-        # mock_model = RecurrentNeuralNetworkTorch()
         expected_call_count = len(self.expected)
-        self.mock_model.predict = MagicMock(side_effect=iter(self.expected))
-        input_queue = Queue()
-        mock_loss_fn = MagicMock(torch.nn.MSELoss)
-        # mock_loss_fn.backward = MagicMock()
-        mock_optimizer = MagicMock(torch.optim.Adam)
-        mock_optimizer.step = MagicMock(side_effect=RuntimeError)
-        parent, child = Pipe()
-        # Expected to be used
-        child.send = MagicMock()
-        parent.recv = MagicMock()
-        # Not expected to be called
-        child.recv = MagicMock()
-        parent.send = MagicMock()
-        for data, expect in zip(self.input_data, self.expected + [None]):
-            input_queue.put((data, expect))
-        with self.assertRaises(RuntimeError), patch.object(child, 'close') as mock_child_close:
-            make_improvements_torch_pipe(
-                self.mock_model, input_queue, mock_loss_fn, mock_optimizer,
-                child)
-            mock_child_close.assert_called_once()
-
-    def test_make_improvements_torch_pipe_optimizer_fails(self):
-        # mock_model = RecurrentNeuralNetworkTorch()
-        expected_call_count = len(self.expected)
-        self.mock_model.predict = MagicMock(side_effect=iter(self.expected))
-        input_queue = Queue()
-        mock_loss_fn = MagicMock(torch.nn.MSELoss, side_effect=RuntimeError)
-        # mock_loss_fn.backward = MagicMock()
-        mock_optimizer = MagicMock(torch.optim.Adam)
-        mock_optimizer.step = MagicMock()
-        parent, child = Pipe()
-        # Expected to be used
-        child.send = MagicMock()
-        parent.recv = MagicMock()
-        # Not expected to be called
-        child.recv = MagicMock()
-        parent.send = MagicMock()
-        for data, expect in zip(self.input_data, self.expected + [None]):
-            input_queue.put((data, expect))
-        with self.assertRaises(RuntimeError), patch.object(child, 'close') as mock_child_close:
-            make_improvements_torch_pipe(
-                self.mock_model, input_queue, mock_loss_fn, mock_optimizer,
-                child)
-            mock_child_close.assert_called_once()
-
-    def test_make_improvements_torch_pipe_pipe_closes(self):
-        # mock_model = RecurrentNeuralNetworkTorch()
-        # expected_call_count = len(self.expected)
-        # self.mock_model.predict = MagicMock(side_effect=iter(self.expected))
-        # input_queue = Queue()
-        # mock_loss_fn = MagicMock(torch.nn.MSELoss)
-        # # mock_loss_fn.backward = MagicMock()
-        # mock_optimizer = MagicMock(torch.optim.Adam)
-        # mock_optimizer.step = MagicMock()
-        # parent, child = Pipe()
-        # # Expected to be used
-        # child.send = MagicMock()
-        # parent.recv = MagicMock()
-        # # Not expected to be called
-        # child.recv = MagicMock()
-        # parent.send = MagicMock()
-        # Close receiving pipe
-        self.parent.close()
+        self.mock_optimizer.step = MagicMock(side_effect=RuntimeError('Optimizer step failed.'))
         for data, expect in zip(self.input_data, self.expected + [None]):
             self.input_queue.put((data, expect))
-        with self.assertRaises(BrokenPipeError), patch.object(self.child, 'close') as mock_child_close:
+        with self.assertRaises(RuntimeError), patch.object(self.child, 'close') as mock_child_close:
             make_improvements_torch_pipe(
                 self.mock_model, self.input_queue, self.mock_loss_fn, self.seq_length, self.mock_optimizer,
                 self.child)
-        mock_child_close.assert_called_once()
-        self.parent.send.assert_called_once()
-        self.child.recv.assert_not_called()
-        self.parent.send.assert_not_called()
-        # self.assertEqual(expected_call_count, mock_loss_fn.backward.call_count)
-        # self.assertEqual(expected_call_count, mock_optimizer.step.call_count)
+            mock_child_close.assert_called_once()
+
+    def test_make_improvements_torch_pipe_parent_pipe_closed(self):
+        expected_call_count = len(self.expected)
+        self.parent.close()
+        for data, expect in zip(self.input_data, self.expected + [None]):
+            self.input_queue.put((data, expect))
+        with self.assertRaises(ChildProcessError),\
+                patch.object(self.child, 'close') as mock_child_close:
+            make_improvements_torch_pipe(
+                self.mock_model, self.input_queue, self.mock_loss_fn, self.seq_length, self.mock_optimizer,
+                self.child)
+            mock_child_close.assert_called_once()
 
     def test_make_improvements_torch_pipe_pipe_full(self):
         for data, expect in zip(self.input_data, self.expected + [None]):
@@ -330,6 +292,17 @@ class TestLearner(unittest.TestCase):
         del self.mock_model
         del self.mock_model_1
         del self.input_data, self.expected
+
+
+def queue_to_list(queue):
+    results = list()
+    item = queue.get()
+    while item is not None:
+        results.append(item)
+        del item
+        item = queue.get()
+    del item
+    return results
 
 
 if __name__ == '__main__':

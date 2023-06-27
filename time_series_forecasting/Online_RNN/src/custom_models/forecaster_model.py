@@ -83,8 +83,6 @@ def run_forecaster(pair: Forecaster, data, input_size, time_skip: int, use_torch
     # TODO function call needs parameters predictor and learner instead of Forecaster
     # Other Process Variables
     loss_fn = torch.nn.MSELoss()
-    # loss_fn = MSETRACLoss()  # MSETRACLoss does not improve performance
-    # optimizer = torch.optim.SGD(pair.learner.parameters(), lr=0.01729518307885298)
     optimizer = torch.optim.Adam(pair.learner.parameters())
     # Shared Process Variables
     # curr_q: QueueType = Queue()
@@ -108,6 +106,7 @@ def run_forecaster(pair: Forecaster, data, input_size, time_skip: int, use_torch
     try:
         predict.start()
         learn.start()
+        time.sleep(1.0)
         results, results_2 = push_data_to_pipes(
             data, start, end_index, time_skip, input_size, predict_parent, learn_parent)
         predict.join()
@@ -180,10 +179,10 @@ def push_data_to_pipes(
     if isinstance(data, torch.Tensor):
         with curr_pipe, hist_pipe:
             for idx in range(start, end_index):
-                end = idx + time_skip + (input_size << 1)  # inclusive end index
-                curr_buff.append(data[:, (idx + input_size + time_skip): end].detach())
+                # end = idx + input_size + (time_skip << 1)  # inclusive end index
+                curr_buff.append(data[:, (idx + time_skip): idx + input_size + time_skip].detach())
                 hist_x_buff.append(data[:, idx: idx + input_size].detach())
-                hist_y_buff.append(data[:, end].unsqueeze(1).detach())
+                hist_y_buff.append(data[:, idx + input_size + time_skip].unsqueeze(1).detach())
                 if curr_ready:
                     curr_pipe.send(torch.cat(curr_buff))
                     curr_buff.clear()
@@ -199,7 +198,7 @@ def push_data_to_pipes(
                 if hist_pipe.poll():
                     hist_out.append(hist_pipe.recv())
                     hist_ready = True
-                time.sleep(0.05)
+                time.sleep(0.08)
             if len(curr_buff) > 0:  # If buffer is not empty yet
                 if not curr_ready:  # If predictor not ready for new data, wait
                     curr_out.append(curr_pipe.recv())
@@ -326,7 +325,7 @@ def make_predictions_torch_pipe(
         hidden = model.make_hidden_state()  # Add batch size if batched
         while data is not QUEUE_SENTINEL:
             count += 1
-            print(f'Predictor looking at data slice #{count}', flush=True)
+            # print(f'Predictor looking at data slice #{count}', flush=True)
             with torch.no_grad():
                 if isinstance(model, RecurrentNeuralNetworkTorch):
                     data = torch.as_tensor(data)
@@ -397,27 +396,6 @@ def make_predictions_torch_all_pipes(
         raise ChildProcessError('A pipe error occurred.')
     finally:
         print('Predictor pipe closed.', flush=True)
-
-
-# def make_predictions(model, queue_or_data, output_queue, lock):
-#     """ """
-#     try:
-#         lock.acquire()
-#         make_predictions(model, queue_or_data, output_queue)
-#     finally:
-#         lock.release()
-
-
-# def make_improvements_torch(
-#         learner, predictor, data, actual, loss_fn,
-#         optimizer: torch.optim.Optimizer):
-#     """ """
-#     prediction = learner.predict(data)
-#     loss = loss_fn(prediction, actual)
-#     optimizer.zero_grad()
-#     loss.backward()
-#     optimizer.step()
-#     update_weights(predictor, learner.named_parameters())
 
 
 def make_improvements_torch_pipe(
@@ -555,22 +533,6 @@ def make_improvements_torch_all_pipes(
     finally:
         print('Learner done', flush=True)
 
-
-# def make_improvements_torch_sm(
-#         learner, predictor, data, actual, loss_fn,
-#         optimizer: torch.optim.Optimizer, lock: Lock):
-#     """ """
-#     # TODO Update and add shared memory
-#     prediction = learner.predict(data)
-#     loss = loss_fn(prediction, actual)
-#     optimizer.zero_grad()
-#     loss.backward()
-#     optimizer.step()
-#     try:
-#         lock.acquire()
-#         update_weights(predictor, learner.named_parameters())
-#     finally:
-#         lock.release()
 
 def update_weights(model: torch.nn.Module, new_weights):
     """ Update weights of model.
