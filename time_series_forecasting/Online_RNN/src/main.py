@@ -19,6 +19,89 @@ from model_selection.data_prep import get_training_data_sliding_window
 from utils.toml_utils import load_toml
 
 
+class TorchMLPRNN(RecurrentNeuralNetworkTorch):
+    def __init__(self, history_length, loss_fn, num_layers=1, data_type=torch.float32):
+        """
+
+        :param int history_length: How many features the model observes at one time.
+        :param loss_fn: Loss function to apply to model
+        :type loss_fn:
+        :param int num_layers: Number of layers model has. Defaults to 1.
+        :param data_type: Type of data to feed into model
+        :type data_type: torch.dtype
+        """
+        super(TorchMLPRNN, self).__init__()
+        self.dtype = data_type
+        self.input_length = history_length
+        self.hidden_features = 64
+        self.num_layers = num_layers
+        self.hidden_1, self.hidden_2 = 64, 128
+        self.hidden_3, self.hidden_4 = 128, 128
+        self.hidden_5, self.hidden_last = 64, 16
+        # self.hidden_7, self.hidden_8 = 2, 2
+        # self.hidden_9, self.hidden_10 = 2, 2
+        self.layer_1 = torch.nn.Linear(self.input_length, self.hidden_1, dtype=self.dtype)
+        self.layer_2 = torch.nn.Linear(self.hidden_1, self.hidden_2, dtype=self.dtype)
+        self.layer_3 = torch.nn.Linear(self.hidden_2, self.hidden_3, dtype=self.dtype)
+        self.layer_4 = torch.nn.Linear(self.hidden_3, self.hidden_4, dtype=self.dtype)
+        self.layer_5 = torch.nn.Linear(self.hidden_4, self.hidden_5, dtype=self.dtype)
+        # self.layer_6 = torch.nn.Linear(self.hidden_5, self.hidden_6, dtype=self.dtype)
+        self.layer_7 = torch.nn.Linear(self.hidden_5, self.hidden_last, dtype=self.dtype)
+        self.rec_1 = torch.nn.RNN(
+            self.hidden_last + self.input_length, self.hidden_features, num_layers=self.num_layers,
+            dtype=self.dtype, batch_first=True, bias=False, nonlinearity='tanh')
+        self.last_layer = torch.nn.Linear(self.hidden_features, 1)
+        self.relu = torch.nn.ReLU()
+        self.tanh = torch.nn.Tanh()
+        self.loss_fn = loss_fn
+        self.hidden_state = self.random_hidden()
+
+    def forward(self, input_val, hidden):
+        """ Return prediction from model.
+
+            :param input_val: Input values to feed into model.
+            :param hidden: Hidden state of the model.
+            :type input_val: torch.Tensor. Should have size
+             (sequence length, input size) or (batch, sequence length, input size)
+            :returns: Tuple of prediction output and state.
+            :rtype: tuple[torch.Tensor, torch.Tensor]
+
+            """
+        # input_val.dtype(self.dtype)
+        val = self.relu(self.layer_1(input_val))
+        val = self.relu(self.layer_2(val))
+        val = self.relu(self.layer_3(val))
+        val = self.relu(self.layer_4(val))
+        val = self.relu(self.layer_5(val))
+        val = self.relu(self.layer_7(val))
+        out, hidden = self.rec_1(torch.cat((val, input_val), 1), hidden)
+        out = self.tanh(self.last_layer(out))
+        return out, hidden
+
+    def predict(self, input_val, hidden):
+        """ Return call to forward.
+
+            Wrapper for forward method.
+        """
+        return self.forward(input_val, hidden)
+
+    def loss(self, prediction, actual):
+        return self.loss_fn(prediction, actual)
+
+    def random_hidden(self, batched=0, bidirect=False):
+        if batched != 0:
+            return torch.randn(
+                self.num_layers if not bidirect else 2 * self.num_layers,
+                batched, self.hidden_features)
+        else:
+            return torch.randn(
+                self.num_layers if not bidirect else 2 * self.num_layers,
+                self.hidden_features)
+
+    def make_hidden_state(self, batched=0, bidirect=False):
+        return self.random_hidden(batched, bidirect)
+
+
 class TorchRNN(RecurrentNeuralNetworkTorch):
     def __init__(self, history_length, loss_fn, num_layers=1, data_type=torch.float32):
         """
@@ -266,7 +349,7 @@ def save_outputs(
 def get_args():
     """ Argument parsing"""
     parse = argparse.ArgumentParser()
-    parse.add_argument('model', choices=['mlp', 'rnn'], default='rnn')
+    parse.add_argument('model', choices=['mlp', 'rnn', 'rnn_mlp', 'mlp_rnn'], default='rnn')
     parse.add_argument('config_file')
     # parse.add_argument('data_file', default=None)
     parse.add_argument('--make_paths', action='store_true')
@@ -298,6 +381,11 @@ def get_args():
             history_length, loss_fn=None, data_type=torch.float32)
         learner = TorchMLP(
             history_length, loss_fn=torch.nn.MSELoss(), data_type=torch.float32)
+    elif args.model == 'mlp_rnn':
+        predictor = TorchMLPRNN(
+            history_length, num_layers=4, loss_fn=None, data_type=torch.float32)
+        learner = TorchMLPRNN(
+            history_length, num_layers=4, loss_fn=torch.nn.MSELoss(), data_type=torch.float32)
     # Evaluate model
     results, results_2 = run_forecaster(
         Forecaster(predictor, learner, torch.nn.MSELoss(), None),
